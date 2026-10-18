@@ -9,10 +9,15 @@ import requests
 
 
 
-def get_general_apod_response() -> list[ApodResponse]:
+def get_general_apod_response(page: int, per_page: int) -> list[ApodResponse]:
 
     try:
-        response = requests.get(APOD_URL, timeout=10)
+        response = requests.get(
+            APOD_URL,
+            params={"page": page, "per_page": per_page},
+            timeout=10,
+        )
+
         response.raise_for_status()
         data = response.json()
 
