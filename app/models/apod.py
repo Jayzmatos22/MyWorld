@@ -1,9 +1,12 @@
 from pydantic import BaseModel, field_validator
 from typing import Literal
 from datetime import date
+from bs4 import BeautifulSoup
+import html
+import re
 
 
-''' Resposta'''
+''' Modelo de resposta da API da NASA para o APOD (Astronomy Picture of the Day) '''
 class ApodResponse(BaseModel):
     date: date
     post_id: int
@@ -13,16 +16,32 @@ class ApodResponse(BaseModel):
     explanation: str
     credit: str | None = None
     copyright: str | None = None
-    alt: str = ""
+    alt: str | None = None
     url: str
     hdurl: str = ""
 
+    """Limpa o texto (vem html imbutido)"""
+    @field_validator("explanation", "credit", "copyright", "alt", mode="before")
+    @classmethod
+    def clean_text(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+
+        text = BeautifulSoup(v, "html.parser").get_text()
+        text = html.unescape(text)
+        text = text.removeprefix("Explanation:")
+        text = text.split("Tomorrow's picture")[0]
+        text = re.sub(r"\s+", " ", text).strip()
+
+        return text or None
+
+
     
     
 
 
 
-''' Exemplo de resposta da api'''
+''' Exemplo de modelo-resposta da api'''
 '''
 {"
 date": "2026-09-11",
