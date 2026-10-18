@@ -1,6 +1,8 @@
 from pydantic import TypeAdapter
-from models.apod import ApodResponse
-from config import APOD_URL
+from app.models.apod import ApodResponse
+from app.config import APOD_URL
+from app.exceptions import ApiServerError
+from pydantic import ValidationError
 import requests
 
 
@@ -8,15 +10,16 @@ import requests
 
 
 def get_general_apod_response() -> list[ApodResponse]:
-    response = requests.get(APOD_URL, timeout=10)
-    response.raise_for_status()
-    data = response.json()
 
-    if not isinstance(data, list):
-        raise ValueError("A resposta da API não é uma lista.")
+    try:
+        response = requests.get(APOD_URL, timeout=10)
+        response.raise_for_status()
+        data = response.json()
 
-    if data and not all(isinstance(item, dict) for item in data):
-        raise ValueError("A resposta da API não contém dicionários válidos.")
+    except requests.RequestException as e:
+        raise ApiServerError("NASA indisponível") from e
 
-    adapter = TypeAdapter(list[ApodResponse])
-    return adapter.validate_python([data])[0]
+    try:
+        return TypeAdapter(list[ApodResponse]).validate_python(data)
+    except ValidationError as e:
+        raise ValueError("Erro ao validar a resposta da API da NASA.") from e
