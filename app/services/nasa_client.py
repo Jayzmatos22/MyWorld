@@ -4,11 +4,13 @@ from app.config import APOD_URL
 from app.exceptions import ApiServerError
 from pydantic import ValidationError
 import requests
+from cachetools import TTLCache, cached
 
 
 
 
-
+apod_cache = TTLCache(maxsize=100, ttl=3600)  # Cache com tamanho máximo de 100 itens e tempo de vida de 1 hora
+@cached(cache=apod_cache)
 def get_general_apod_response(page: int, per_page: int) -> list[ApodResponse]:
 
     try:
