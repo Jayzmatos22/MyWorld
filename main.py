@@ -3,8 +3,11 @@ from app.routers import apod
 from app.exceptions import ApiServerError
 from fastapi import Request
 from fastapi.responses import JSONResponse
+from mangum import Mangum
+
 
 app = FastAPI(title="My Planet")
+handler = Mangum(app)
 app.include_router(apod.router)
 
 
