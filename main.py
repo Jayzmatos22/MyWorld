@@ -7,10 +7,7 @@ from mangum import Mangum
 
 
 app = FastAPI(title="My Planet")
-handler = Mangum(app)
 app.include_router(apod.router)
-
-
 
 '''' Exceptions'''
 @app.exception_handler(ApiServerError)
@@ -19,3 +16,9 @@ def out_air_api_server_error(request: Request, exc: ApiServerError):
         status_code=exc.status_code,
         content={"message": "Erro ao acessar a API da NASA."},
     )
+
+handler = Mangum(app)
+
+
+
+
