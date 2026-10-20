@@ -1,0 +1,24 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  MyPlanetFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: main.handler
+      Runtime: python3.13
+      MemorySize: 512
+      Timeout: 30
+      FunctionUrlConfig:
+        AuthType: NONE
+
+  MyPlanetLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/MyPlanetFunction
+      RetentionInDays: 7
+
+Outputs:
+  Url:
+    Value: !GetAtt MyPlanetFunctionUrl.FunctionUrl
