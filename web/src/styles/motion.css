@@ -1,0 +1,170 @@
+/*
+ * Coreografia de entrada (stagger).
+ * O IntersectionObserver só marca `data-revealed`; o resto é CSS.
+ * Atraso = índice × passo, então o JS nunca agenda timers.
+ */
+[data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 1.75rem, 0);
+  transition:
+    opacity var(--duration-slow) var(--ease-out-quart),
+    transform var(--duration-glacial) var(--ease-out-expo);
+  transition-delay: calc(var(--reveal-i, 0) * var(--stagger-step));
+}
+
+[data-reveal='fade'] {
+  transform: none;
+}
+
+[data-reveal][data-revealed] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Título dividido em palavras que sobem de dentro de uma "fenda" */
+.split-word {
+  display: inline-block;
+  overflow: clip;
+  overflow-clip-margin: 0.12em;
+  vertical-align: top;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+.split-word > span {
+  display: inline-block;
+  transform: translate3d(0, 108%, 0);
+  transition: transform var(--duration-glacial) var(--ease-out-expo);
+  transition-delay: calc(120ms + var(--word-i, 0) * 55ms);
+}
+
+[data-revealed] .split-word > span,
+.split-title[data-revealed] .split-word > span {
+  transform: none;
+}
+
+/*
+ * Revelação da placa: duas folhas da "cúpula" se abrem (scaleX a partir das
+ * bordas) revelando uma cópia desfocada, e a versão nítida surge por cima
+ * via opacity + scale. O desfoque é estático (pintado uma vez, nunca
+ * animado); só transform e opacity mudam ao longo do tempo.
+ */
+.plate-shutter {
+  transform-origin: var(--origin, left) center;
+  transition: transform var(--duration-slow) var(--ease-shutter);
+}
+
+.plate-shutter--right {
+  --origin: right;
+}
+
+[data-plate-state='ready'] .plate-shutter {
+  transform: scaleX(0);
+}
+
+.plate-sharp {
+  opacity: 0;
+  transform: scale(1.06);
+  transition:
+    opacity var(--duration-glacial) var(--ease-out-quart) 280ms,
+    transform 2200ms var(--ease-out-expo) 120ms;
+}
+
+[data-plate-state='ready'] .plate-sharp,
+[data-plate-state='instant'] .plate-sharp {
+  opacity: 1;
+  transform: none;
+}
+
+[data-plate-state='instant'] .plate-sharp {
+  transition: none;
+}
+
+/* ── Favorito: a estrela "estala" e solta faíscas ──────────── */
+@keyframes star-pop {
+  0% { transform: scale(0.6) rotate(-45deg); }
+  60% { transform: scale(1.22) rotate(8deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes spark {
+  0% { opacity: 1; transform: rotate(var(--a)) translate3d(0, -6px, 0) scaleY(1); }
+  100% { opacity: 0; transform: rotate(var(--a)) translate3d(0, -19px, 0) scaleY(0.2); }
+}
+
+.fav-star-pop {
+  animation: star-pop 560ms var(--ease-spring);
+}
+
+.fav-spark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1px;
+  height: 5px;
+  margin: -2.5px 0 0 -0.5px;
+  background: var(--color-amber);
+  opacity: 0;
+  animation: spark 620ms var(--ease-out-expo) forwards;
+}
+
+/* ── View Transitions (galeria ⇄ detalhes) ─────────────────── */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--duration-base);
+  animation-timing-function: var(--ease-out-quart);
+}
+
+::view-transition-group(plate) {
+  animation-duration: 760ms;
+  animation-timing-function: var(--ease-out-expo);
+}
+
+::view-transition-old(plate),
+::view-transition-new(plate) {
+  height: 100%;
+  object-fit: cover;
+  animation-duration: 760ms;
+  animation-timing-function: var(--ease-out-quart);
+}
+
+::view-transition-group(plate-title) {
+  animation-duration: 760ms;
+  animation-timing-function: var(--ease-out-expo);
+}
+
+/* O céu e o cabeçalho ficam vivos e parados durante a troca */
+::view-transition-old(sky),
+::view-transition-old(masthead) {
+  display: none;
+}
+
+::view-transition-new(sky),
+::view-transition-new(masthead) {
+  animation: none;
+}
+
+/* ── Movimento reduzido: versão estática e completa ────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  [data-reveal],
+  .split-word > span {
+    opacity: 1;
+    transform: none;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
