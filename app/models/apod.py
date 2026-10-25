@@ -6,6 +6,20 @@ import html
 import re
 
 
+def clean_text(v: str | None) -> str | None:
+    """Limpa o texto (vem html imbutido)"""
+    if v is None:
+        return None
+
+    text = BeautifulSoup(v, "html.parser").get_text()
+    text = html.unescape(text)
+    text = text.removeprefix("Explanation:")
+    text = text.split("Tomorrow's picture")[0]
+    text = re.sub(r"\s+", " ", text).strip()
+
+    return text or None
+
+
 ''' Modelo de resposta da API da NASA para o APOD (Astronomy Picture of the Day) '''
 class ApodResponse(BaseModel):
     date: date
@@ -20,25 +34,27 @@ class ApodResponse(BaseModel):
     url: str
     hdurl: str = ""
 
-    """Limpa o texto (vem html imbutido)"""
     @field_validator("explanation", "credit", "copyright", "alt", mode="before")
     @classmethod
     def clean_text(cls, v: str | None) -> str | None:
-        if v is None:
-            return None
-
-        text = BeautifulSoup(v, "html.parser").get_text()
-        text = html.unescape(text)
-        text = text.removeprefix("Explanation:")
-        text = text.split("Tomorrow's picture")[0]
-        text = re.sub(r"\s+", " ", text).strip()
-
-        return text or None
+        return clean_text(v)
 
 
-    
-    
+''' Modelo de resposta da api.nasa.gov/planetary/apod (usado pelo front) '''
+class ApodItem(BaseModel):
+    date: date
+    title: str
+    explanation: str
+    media_type: Literal["image", "video", "other"]
+    url: str | None = None
+    hdurl: str | None = None
+    thumbnail_url: str | None = None
+    copyright: str | None = None
 
+    @field_validator("explanation", "copyright", "title", mode="before")
+    @classmethod
+    def clean_text(cls, v: str | None) -> str | None:
+        return clean_text(v)
 
 
 ''' Exemplo de modelo-resposta da api'''
