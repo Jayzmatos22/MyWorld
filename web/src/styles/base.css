@@ -1,0 +1,112 @@
+@layer base {
+  html {
+    color-scheme: dark;
+    background-color: var(--color-void);
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scrollbar-color: var(--color-rule) var(--color-void);
+  }
+
+  body {
+    min-height: 100svh;
+    background-color: var(--color-void);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    font-optical-sizing: auto;
+    font-kerning: normal;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 380;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background-color: var(--color-amber);
+    color: var(--color-void);
+  }
+
+  /* Foco visível: um traço âmbar, nunca o anel azul padrão */
+  :focus-visible {
+    outline: 2px solid var(--color-amber);
+    outline-offset: 3px;
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  /* Inputs de data nativos no tema escuro */
+  input[type='date']::-webkit-calendar-picker-indicator {
+    filter: invert(0.75) sepia(0.4) hue-rotate(180deg);
+    cursor: pointer;
+  }
+}
+
+/* Rótulo técnico em monoespaçada caixa-alta */
+@utility label-mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  line-height: var(--text-micro--line-height);
+  letter-spacing: var(--text-micro--letter-spacing);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* Algarismos tabulares para datas e números de placa */
+@utility tabular {
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+/* Grid editorial de 12 colunas com margens fluidas */
+@utility page-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: var(--spacing-gutter);
+  padding-inline: var(--spacing-gutter);
+  max-width: var(--container-page);
+  margin-inline: auto;
+
+  @media (width >= 48rem) {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+}
+
+/* Capitular editorial para a explicação */
+@utility drop-cap {
+  &::first-letter {
+    float: left;
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: 4.6em;
+    line-height: 0.82;
+    margin: 0.06em 0.12em 0 -0.04em;
+    color: var(--color-amber);
+  }
+}
+
+@utility sr-only-focusable {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+
+  &:focus-visible {
+    width: auto;
+    height: auto;
+    clip-path: none;
+  }
+}

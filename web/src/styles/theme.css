@@ -1,0 +1,112 @@
+/*
+ * Design tokens — fonte única de verdade.
+ * `static` garante que todas as variáveis existam no CSS final,
+ * porque o canvas do campo de estrelas lê algumas delas em runtime.
+ */
+@theme static {
+  /* ── Cores ─────────────────────────────────────────────── */
+  --color-*: initial;
+
+  --color-void: #05060a;
+  --color-abyss: #0a0d1a;
+  --color-night: #10142a;
+  --color-dusk: #161b36;
+  --color-rule: #232946;
+
+  --color-nebula-indigo: #2a1f4d;
+  --color-nebula-wine: #3d1a33;
+
+  --color-amber: #e8b86b;
+  --color-amber-deep: #b98f4e;
+
+  --color-ink: #e6e8f0;
+  --color-ink-muted: #8a90a8;
+  --color-ink-faint: #646a85;
+
+  --color-signal-red: #e58a78;
+  --color-signal-teal: #86cdb8;
+
+  /* Tons das estrelas (lidos pelo canvas) */
+  --color-star-cool: #e6e8f0;
+  --color-star-blue: #b4c4ff;
+  --color-star-warm: #f3d9a6;
+
+  /* ── Tipografia ────────────────────────────────────────── */
+  --font-*: initial;
+  --font-display: 'Fraunces Variable', 'Iowan Old Style', Georgia, serif;
+  --font-body: 'Newsreader Variable', 'Iowan Old Style', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --default-font-family: var(--font-body);
+  --default-mono-font-family: var(--font-mono);
+
+  /* Escala fluida: contraste forte entre metadado e título */
+  --text-*: initial;
+  --text-micro: 0.6875rem;
+  --text-micro--line-height: 1.4;
+  --text-micro--letter-spacing: 0.16em;
+
+  --text-meta: 0.8125rem;
+  --text-meta--line-height: 1.5;
+  --text-meta--letter-spacing: 0.06em;
+
+  --text-body: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
+  --text-body--line-height: 1.68;
+
+  --text-lede: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  --text-lede--line-height: 1.45;
+
+  --text-title: clamp(1.375rem, 1.15rem + 1vw, 2rem);
+  --text-title--line-height: 1.1;
+  --text-title--letter-spacing: -0.01em;
+
+  --text-headline: clamp(2.25rem, 1.4rem + 3.6vw, 4.75rem);
+  --text-headline--line-height: 0.98;
+  --text-headline--letter-spacing: -0.025em;
+
+  --text-display: clamp(2.75rem, 1.2rem + 7.4vw, 9rem);
+  --text-display--line-height: 0.9;
+  --text-display--letter-spacing: -0.035em;
+
+  --text-giant: clamp(5.5rem, 2rem + 15vw, 17rem);
+  --text-giant--line-height: 0.78;
+  --text-giant--letter-spacing: -0.05em;
+
+  /* ── Espaçamento e larguras ────────────────────────────── */
+  --spacing-gutter: clamp(1rem, 0.4rem + 2.6vw, 3rem);
+  --spacing-section: clamp(4.5rem, 2rem + 9vw, 11rem);
+  --spacing-masthead: 4.25rem;
+
+  --container-measure: 37rem;
+  --container-page: 96rem;
+
+  /* ── Movimento ─────────────────────────────────────────── */
+  --ease-*: initial;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+  --ease-in-quart: cubic-bezier(0.5, 0, 0.75, 0);
+  --ease-shutter: cubic-bezier(0.7, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --duration-instant: 120ms;
+  --duration-quick: 240ms;
+  --duration-base: 440ms;
+  --duration-slow: 820ms;
+  --duration-glacial: 1400ms;
+
+  --stagger-step: 75ms;
+
+  --animate-scan: scan 2.6s var(--ease-in-out-quint) infinite;
+  --animate-blink: blink 1.6s var(--ease-in-out-quint) infinite;
+
+  @keyframes scan {
+    from { transform: translate3d(0, -100%, 0); }
+    to { transform: translate3d(0, 100%, 0); }
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 0.25; }
+    50% { opacity: 1; }
+  }
+}

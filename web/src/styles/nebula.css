@@ -1,0 +1,126 @@
+/*
+ * Nebulosa de fundo.
+ *
+ * Os gradientes são pintados UMA vez (cada nuvem é um radial-gradient estático)
+ * e só o transform muda, então o navegador nunca repinta — apenas recompõe.
+ *
+ * @property entra para tipar os eixos de movimento: cada eixo (x, y, rotação,
+ * escala) é uma variável registrada, animada por um keyframe próprio com
+ * duração prima diferente. Somadas no `transform`, elas geram uma deriva
+ * orgânica que não se repete por horas, algo impossível com um único
+ * keyframe de `transform`.
+ */
+
+@property --drift-x {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+@property --drift-y {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+@property --drift-r {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@property --drift-s {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
+.nebula {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+
+.nebula__cloud {
+  position: absolute;
+  border-radius: 50%;
+  transform: translate3d(var(--drift-x), var(--drift-y), 0) rotate(var(--drift-r)) scale(var(--drift-s));
+  will-change: transform;
+  animation:
+    drift-x var(--dx, 97s) var(--ease-in-out-quint) infinite alternate,
+    drift-y var(--dy, 131s) var(--ease-in-out-quint) infinite alternate,
+    drift-r var(--dr, 173s) var(--ease-in-out-quint) infinite alternate,
+    drift-s var(--ds, 89s) var(--ease-in-out-quint) infinite alternate;
+}
+
+.nebula__cloud--indigo {
+  width: 95vmax;
+  height: 70vmax;
+  top: -30vmax;
+  left: -25vmax;
+  background: radial-gradient(closest-side, rgb(42 31 77 / 0.62), rgb(42 31 77 / 0.18) 55%, transparent);
+  --dx: 97s;
+  --dy: 131s;
+}
+
+.nebula__cloud--wine {
+  width: 80vmax;
+  height: 60vmax;
+  top: 25vh;
+  right: -35vmax;
+  background: radial-gradient(closest-side, rgb(61 26 51 / 0.5), rgb(61 26 51 / 0.14) 60%, transparent);
+  --dx: 113s;
+  --dy: 83s;
+  --dr: 151s;
+  animation-direction: alternate-reverse;
+}
+
+.nebula__cloud--dust {
+  width: 60vmax;
+  height: 30vmax;
+  bottom: -12vmax;
+  left: 10vw;
+  background: radial-gradient(closest-side, rgb(232 184 107 / 0.05), transparent);
+  --dx: 139s;
+  --dy: 107s;
+  --ds: 71s;
+}
+
+/* Vinheta + grão estático: escondem o banding dos gradientes escuros */
+.nebula__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 90% at 50% 40%, transparent 55%, rgb(5 6 10 / 0.85)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@keyframes drift-x {
+  from { --drift-x: -6%; }
+  to { --drift-x: 7%; }
+}
+
+@keyframes drift-y {
+  from { --drift-y: -5%; }
+  to { --drift-y: 6%; }
+}
+
+@keyframes drift-r {
+  from { --drift-r: -8deg; }
+  to { --drift-r: 10deg; }
+}
+
+@keyframes drift-s {
+  from { --drift-s: 0.92; }
+  to { --drift-s: 1.1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nebula__cloud {
+    animation: none;
+    will-change: auto;
+  }
+}
