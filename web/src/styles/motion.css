@@ -45,8 +45,9 @@
 
 /*
  * Revelação da placa: duas folhas da "cúpula" se abrem (scaleX a partir das
- * bordas) enquanto a versão desfocada dá lugar à nítida via opacity.
- * Nada aqui anima filter ou clip-path — só transform e opacity.
+ * bordas) revelando uma cópia desfocada, e a versão nítida surge por cima
+ * via opacity + scale. O desfoque é estático (pintado uma vez, nunca
+ * animado); só transform e opacity mudam ao longo do tempo.
  */
 .plate-shutter {
   transform-origin: var(--origin, left) center;
@@ -61,26 +62,50 @@
   transform: scaleX(0);
 }
 
-.plate-blur {
-  opacity: 0;
-  transition: opacity var(--duration-base) var(--ease-out-quart);
-}
-
-[data-plate-state='ready'] .plate-blur {
-  opacity: 1;
-}
-
 .plate-sharp {
   opacity: 0;
   transform: scale(1.06);
   transition:
-    opacity var(--duration-glacial) var(--ease-out-quart) 260ms,
+    opacity var(--duration-glacial) var(--ease-out-quart) 280ms,
     transform 2200ms var(--ease-out-expo) 120ms;
 }
 
-[data-plate-state='ready'] .plate-sharp {
+[data-plate-state='ready'] .plate-sharp,
+[data-plate-state='instant'] .plate-sharp {
   opacity: 1;
   transform: none;
+}
+
+[data-plate-state='instant'] .plate-sharp {
+  transition: none;
+}
+
+/* ── Favorito: a estrela "estala" e solta faíscas ──────────── */
+@keyframes star-pop {
+  0% { transform: scale(0.6) rotate(-45deg); }
+  60% { transform: scale(1.22) rotate(8deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes spark {
+  0% { opacity: 1; transform: rotate(var(--a)) translate3d(0, -6px, 0) scaleY(1); }
+  100% { opacity: 0; transform: rotate(var(--a)) translate3d(0, -19px, 0) scaleY(0.2); }
+}
+
+.fav-star-pop {
+  animation: star-pop 560ms var(--ease-spring);
+}
+
+.fav-spark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1px;
+  height: 5px;
+  margin: -2.5px 0 0 -0.5px;
+  background: var(--color-amber);
+  opacity: 0;
+  animation: spark 620ms var(--ease-out-expo) forwards;
 }
 
 /* ── View Transitions (galeria ⇄ detalhes) ─────────────────── */
