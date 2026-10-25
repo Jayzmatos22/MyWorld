@@ -1,0 +1,4 @@
+-r requirements.txt
+uvicorn==0.40.0
+# Faz o requests confiar nos certificados do Windows (necessário com o AVG inspecionando HTTPS)
+pip-system-certs==5.3
