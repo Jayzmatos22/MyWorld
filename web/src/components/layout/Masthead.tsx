@@ -33,7 +33,7 @@ export function Masthead() {
             Nº {String(dayOfYear(today)).padStart(3, "0")}{" "}
             <span className="text-ink-faint">·</span> {formatPlateDate(today)}
           </span>
-          <span className="hidden md:inline">NASA / APOD</span>
+          <span className="hidden md:inline text-color-yellow">NASA / APOD</span>
         </div>
       </div>
 
@@ -45,10 +45,10 @@ export function Masthead() {
           aria-label="MyWorld — página inicial"
         >
           <span className="font-display text-[2.1rem] font-[340] tracking-[-0.03em]">
-            <em className="font-[300] text-ink-muted transition-colors duration-(--duration-base) ease-out-quart group-hover:text-amber">
-              my
+            <em className="font-[700] text-ink-muted transition-colors duration-(--duration-base) ease-out-quart group-hover:text-amber">
+              My
             </em>
-            Planet
+            World
           </span>
         </NavLink>
 
