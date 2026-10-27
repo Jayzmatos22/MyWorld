@@ -1,4 +1,4 @@
-# myPlanet — web
+# MyWorld — web
 
 Front-end do arquivo APOD (React 19 + TypeScript estrito + Tailwind v4 + Vite).
 
@@ -35,10 +35,10 @@ src/
 
 ## Rotas
 
-| Rota | Conteúdo |
-|---|---|
-| `/` | Placa do dia + seis noites anteriores |
-| `/placa/:data` | Detalhes (← → navegam entre dias) |
-| `/galeria?de=&ate=` | Intervalo de até 31 dias |
-| `/acaso` | 8 placas aleatórias |
-| `/favoritos` | Favoritos salvos no navegador |
+| Rota                | Conteúdo                              |
+| ------------------- | ------------------------------------- |
+| `/`                 | Placa do dia + seis noites anteriores |
+| `/placa/:data`      | Detalhes (← → navegam entre dias)     |
+| `/galeria?de=&ate=` | Intervalo de até 31 dias              |
+| `/acaso`            | 8 placas aleatórias                   |
+| `/favoritos`        | Favoritos salvos no navegador         |
