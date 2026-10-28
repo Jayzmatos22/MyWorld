@@ -1,0 +1,54 @@
+.galaxy-icon {
+    width: 32px ;  /* Substitui ou força o tamanho que você quiser */
+    height: 32px;
+    
+    animation: zigzag 4s ease-in-out infinite, ps 2.3s ease-in-out infinite;;
+}
+
+.moon-icon {
+    background: radial-gradient(closest-side, rgb(255, 255, 255) 15%, rgb(55, 1, 1) 45%, transparent);
+    width: 32px ;  /* Substitui ou força o tamanho que você quiser */
+    height: 32px;
+}
+
+@keyframes zigzag {
+  0% {
+    transform: translate(0, 0); /* (X, Y) */
+  }
+  12.5% {
+    transform: translate(1.5rem, -4px); 
+  }
+  25% {
+    transform: translate(1.6rem, 7px); 
+  }
+  37.5% {
+    transform: translate(7.5rem, -4px);
+  }
+  50% {
+    transform: translate(10rem, 0); 
+  }
+  62.5% {
+    transform: translate(7.5rem, 4px); 
+  }
+  75% {
+    transform: translate(5rem, 5px); 
+  }
+  87.5% {
+    transform: translate(3.5rem, -10px); 
+  }
+  100% {
+    transform: translate(0, 0); 
+  }
+}
+
+
+@keyframes ps {
+    0% {
+    background: radial-gradient(closest-side, rgb(222, 211, 2), rgba(175, 10, 76, 0.986) 55%, transparent);
+  }
+  100% {
+    background: radial-gradient(closest-side, rgba(173, 247, 13, 0.877), rgba(0, 30, 255, 0.986) 55%, transparent);
+  }
+
+}
+
