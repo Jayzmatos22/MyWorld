@@ -20,3 +20,9 @@ __pycache__/
 # SO
 .DS_Store
 Thumbs.db
+# SAM build (cópia gerada do projeto — nunca editar aqui)
+.aws-sam/
+
+# Build do front
+web/dist/
+web/node_modules/

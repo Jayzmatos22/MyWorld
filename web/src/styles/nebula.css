@@ -61,9 +61,9 @@
   height: 70vmax;
   top: -30vmax;
   left: -25vmax;
-  background: radial-gradient(closest-side, rgb(42 31 77 / 0.62), rgb(42 31 77 / 0.18) 55%, transparent);
-  --dx: 97s;
-  --dy: 131s;
+  background: radial-gradient(closest-side, rgba(112, 164, 0, 0.181), rgba(5, 0, 2, 0.986) 55%, transparent);
+  --dx: 20s;
+  --dy: 30s;
 }
 
 .nebula__cloud--wine {
@@ -71,10 +71,10 @@
   height: 60vmax;
   top: 25vh;
   right: -35vmax;
-  background: radial-gradient(closest-side, rgb(61 26 51 / 0.5), rgb(61 26 51 / 0.14) 60%, transparent);
-  --dx: 113s;
-  --dy: 83s;
-  --dr: 151s;
+  background: radial-gradient(closest-side, rgba(0, 241, 181, 0.137), rgba(54, 1, 16, 0.617) 50%, transparent);
+  --dx: 15s;
+  --dy: 50s;
+  --dr: 100s;
   animation-direction: alternate-reverse;
 }
 
@@ -83,7 +83,7 @@
   height: 30vmax;
   bottom: -12vmax;
   left: 10vw;
-  background: radial-gradient(closest-side, rgb(232 184 107 / 0.05), transparent);
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.73) 3%, rgba(10, 3, 25, 0.355), rgba(36, 2, 59, 0.434), transparent);
   --dx: 139s;
   --dy: 107s;
   --ds: 71s;
@@ -94,13 +94,13 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(120% 90% at 50% 40%, transparent 55%, rgb(5 6 10 / 0.85)),
+    radial-gradient(120% 90% at 50% 40%, transparent 35%, rgb(2, 0, 5)),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 @keyframes drift-x {
-  from { --drift-x: -6%; }
-  to { --drift-x: 7%; }
+  from { --drift-x: -15%; }
+  to { --drift-x: 5%; }
 }
 
 @keyframes drift-y {
@@ -114,8 +114,8 @@
 }
 
 @keyframes drift-s {
-  from { --drift-s: 0.92; }
-  to { --drift-s: 1.1; }
+  from { --drift-s: 0.72; }
+  to { --drift-s: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {

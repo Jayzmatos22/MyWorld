@@ -1,10 +1,10 @@
-import { StatusPanel } from '@/components/ui/StatusPanel'
-import { ButtonLink } from '@/components/ui/Button'
+import { StatusPanel } from "@/components/ui/StatusPanel";
+import { ButtonLink } from "@/components/ui/Button";
 
 export function NotFoundPage() {
   return (
     <>
-      <title>Fora do mapa — myPlanet</title>
+      <title>Fora do mapa — MyWorld</title>
       <StatusPanel
         variant="error"
         code="404 · Fora do mapa estelar"
@@ -14,5 +14,5 @@ export function NotFoundPage() {
         O endereço não corresponde a nenhuma página do arquivo.
       </StatusPanel>
     </>
-  )
+  );
 }

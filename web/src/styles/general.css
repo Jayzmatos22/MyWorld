@@ -1,0 +1,100 @@
+.galaxy-icon {
+    width: 32px ; 
+    height: 32px;
+    
+    animation: zigzag 4s ease-in-out infinite, 
+    ps 2.3s ease-in-out infinite, 
+    shadow-icon 5.1s ease-in-out infinite,
+    rotateOrbit 2s linear infinite;
+}
+
+.moon-icon {
+    background: radial-gradient(closest-side, rgb(255, 255, 255) 15%, rgb(55, 1, 1) 45%, transparent);
+    width: 32px ;  /* Substitui ou força o tamanho que você quiser */
+    height: 32px;
+}
+
+/* Usa `translate` (e não `transform`) para não brigar com o `rotate` do rotateOrbit */
+@keyframes zigzag {
+  0% {
+    translate: 0 0; /* X Y */
+  }
+  12.5% {
+    translate: 1.5rem -4px;
+  }
+  25% {
+    translate: 1.6rem 7px;
+  }
+  37.5% {
+    translate: 7.5rem -4px;
+  }
+  50% {
+    translate: 10rem 0;
+  }
+  62.5% {
+    translate: 7.5rem 4px;
+  }
+  75% {
+    translate: 5rem 5px;
+  }
+  87.5% {
+    translate: 3.5rem -10px;
+  }
+  100% {
+    translate: 0 0;
+  }
+}
+
+
+@keyframes ps {
+    0% {
+    background: radial-gradient(closest-side, rgb(222, 211, 2), rgba(175, 10, 76, 0.986) 55%, transparent);
+    
+  }
+  100% {
+    background: radial-gradient(closest-side, rgba(173, 247, 13, 0.877), rgba(0, 30, 255, 0.986) 55%, transparent);
+  }
+
+}
+
+/* Melhor que box-shadow*/
+@keyframes shadow-icon {
+    0% {
+        filter: drop-shadow(0px 0px 2px rgba(213, 252, 70, 0.632));
+    } 
+    50% {
+        /* Sem deslocamento: a sombra gira junto com o ícone (rotateOrbit),
+           então qualquer offset vira um círculo em volta dele */
+        filter: drop-shadow(0 0 90px rgb(230, 222, 255));
+    }
+    100% {
+        filter: drop-shadow(0px 0px 2px rgba(0, 234, 255, 0.831));
+    }
+}
+
+
+.title-bg {
+  /* Pico amber no centro, sumindo igualmente para os dois lados */
+  background-image: linear-gradient(
+    to right,
+    transparent 15%,
+    color-mix(in oklab, var(--color-amber) 5%, transparent) 50%,
+    transparent 80%
+  );
+}
+
+
+.orbit-icon{
+    background: radial-gradient(closest-side, rgb(73, 255, 82), rgba(1, 96, 17, 0.986) 55%, transparent);
+    animation: rotateOrbit 1s linear infinite;
+    filter: drop-shadow(5px 5px 9px rgb(197, 255, 5));
+}
+
+@keyframes rotateOrbit {
+    from {
+        rotate: 0deg;
+    }
+    to {
+        rotate: 360deg;
+    }
+}

@@ -1,16 +1,19 @@
-import { useFavorites } from '@/hooks/useFavorites'
-import { ContactSheet } from '@/components/plate/ContactSheet'
-import { SectionHeading } from '@/components/layout/SectionHeading'
-import { StatusPanel } from '@/components/ui/StatusPanel'
-import { ButtonLink } from '@/components/ui/Button'
+import { useFavorites } from "@/hooks/useFavorites";
+import { ContactSheet } from "@/components/plate/ContactSheet";
+import { SectionHeading } from "@/components/layout/SectionHeading";
+import { StatusPanel } from "@/components/ui/StatusPanel";
+import { ButtonLink } from "@/components/ui/Button";
 
 export function FavoritesPage() {
-  const favorites = useFavorites()
+  const favorites = useFavorites();
 
   return (
     <>
-      <title>Favoritos — myPlanet</title>
-      <SectionHeading kicker={`Arquivo pessoal · ${favorites.length} placas`} title="Suas placas guardadas">
+      <title>Favoritos — MyWorld</title>
+      <SectionHeading
+        kicker={`Arquivo pessoal · ${favorites.length} placas`}
+        title="Suas placas guardadas"
+      >
         Ficam salvas neste navegador, sem conta e sem servidor.
       </SectionHeading>
 
@@ -32,5 +35,5 @@ export function FavoritesPage() {
         <ContactSheet items={favorites} offset={5} label="Placas favoritas" />
       )}
     </>
-  )
+  );
 }

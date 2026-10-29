@@ -64,7 +64,7 @@ export function PlateFeature({ apod, eyebrow, transitionName, navigation }: Plat
       <SplitTitle
         key={apod.date}
         text={apod.title}
-        className="relative col-span-full text-display md:col-span-10 md:-mt-[0.32em]"
+        className="relative col-span-full text-display md:col-span-10 title-bg md:-mt-[0.32em]"
       />
 
       <Reveal as="aside" index={1} className="col-span-full flex flex-col gap-8 md:col-span-3 md:row-span-2">

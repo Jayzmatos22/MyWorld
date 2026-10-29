@@ -1,8 +1,8 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 
 Resources:
-  MyPlanetFunction:
+  MyWorldFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./
@@ -13,12 +13,12 @@ Resources:
       FunctionUrlConfig:
         AuthType: NONE
 
-  MyPlanetLogs:
+  MyWorldLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: /aws/lambda/MyPlanetFunction
+      LogGroupName: /aws/lambda/MyWorldFunction
       RetentionInDays: 7
 
 Outputs:
   Url:
-    Value: !GetAtt MyPlanetFunctionUrl.FunctionUrl
+    Value: !GetAtt MyWorldFunctionUrl.FunctionUrl

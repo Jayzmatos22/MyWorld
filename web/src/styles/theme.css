@@ -8,16 +8,16 @@
   --color-*: initial;
 
   --color-void: #05060a;
-  --color-abyss: #0a0d1a;
+  --color-abyss: #000000;
   --color-night: #10142a;
   --color-dusk: #161b36;
-  --color-rule: #232946;
+  --color-rule: #b9b30374;
 
   --color-nebula-indigo: #2a1f4d;
   --color-nebula-wine: #3d1a33;
 
-  --color-amber: #e8b86b;
-  --color-amber-deep: #b98f4e;
+  --color-amber: #c39853;
+  --color-amber-deep: rgb(111, 80, 34);
 
   --color-ink: #e6e8f0;
   --color-ink-muted: #8a90a8;
@@ -101,7 +101,7 @@
   --animate-blink: blink 1.6s var(--ease-in-out-quint) infinite;
 
   @keyframes scan {
-    from { transform: translate3d(0, -100%, 0); }
+    from { transform: translate3d(0, -10%, 0); }
     to { transform: translate3d(0, 100%, 0); }
   }
 
