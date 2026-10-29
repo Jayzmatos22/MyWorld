@@ -11,6 +11,7 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { Reveal } from "@/components/ui/Reveal";
 import { ButtonLink } from "@/components/ui/Button";
 import { ArrowIcon } from "@/components/ui/icons";
+import { MoonStar, Galaxy  } from "lucide-react";
 
 export function TodayPage() {
   const { state, retry } = useTodayApod();
@@ -49,9 +50,15 @@ function PreviousNights({ before }: { before: IsoDate }) {
           index={1}
           className="col-span-full flex items-end justify-between gap-6 md:col-span-9"
         >
-          <h2 id="noites-anteriores" className="text-headline">
-            Noites <em className="text-ink-muted">anteriores</em>
-          </h2>
+          <div className="mb-2 flex flex-col gap-2 rounded-md">
+            <div className="flex gap-2" aria-hidden="true">
+              <MoonStar className="moon-icon"/>
+              <Galaxy className="galaxy-icon"/>
+            </div>
+            <h2 id="noites-anteriores" className="text-headline">
+              Noites <em className="text-ink-muted">anteriores</em>
+            </h2>
+          </div>
           <ButtonLink to="/galeria" className="hidden shrink-0 sm:inline-flex">
             Galeria <ArrowIcon />
           </ButtonLink>
