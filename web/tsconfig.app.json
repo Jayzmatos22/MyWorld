@@ -22,8 +22,7 @@
     "noFallthroughCasesInSwitch": true,
     "erasableSyntaxOnly": true,
 
-    "baseUrl": ".",
-    "paths": { "@/*": ["src/*"] }
+    "paths": { "@/*": ["./src/*"] }
   },
   "include": ["src"]
 }
