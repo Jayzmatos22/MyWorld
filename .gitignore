@@ -26,3 +26,4 @@ Thumbs.db
 # Build do front
 web/dist/
 web/node_modules/
+"env.bat" 

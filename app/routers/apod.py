@@ -2,7 +2,7 @@ from fastapi import APIRouter, Query
 from datetime import date
 from app.models.apod import ApodResponse, ApodItem
 from app.exceptions import ContractApiError
-from app.services.nasa_client import (
+from app.services.nasa import (
     get_general_apod_response,
     get_today_apod,
     get_apod_by_date,
