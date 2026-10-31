@@ -1,19 +1,20 @@
 from fastapi import APIRouter, Query
 from app.models.llm import ChatResponse, ChatRequest
 from app.config.llm import PROVIDERS
-
+from app.services.llm import ask, get_providers
+from app.models.llm import ProviderOption
 
 
 
 
 router = APIRouter(prefix="/llm", tags=["LLM"])
 
-DEFAULT_PROVIDER="nvidia"
+'''Listar todos os provedores/IA'''
+@router.get("/providers", response_model=list[ProviderOption])
+def providers():
+    return get_providers()
 
 
-@router.get("/providers")
-def list_providers():
-    return [
-        {"id": pid, "name": p.name, "models": p.models, "default_model": p.standard_model}
-        for pid, p in PROVIDERS.items()
-    ]
+@router.post("/chat", response_model=ChatResponse)
+def chat(req: ChatRequest):
+    return ask(req)

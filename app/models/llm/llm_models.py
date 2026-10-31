@@ -16,6 +16,16 @@ class Provider(BaseModel):
     models: list[str] = providers
 
 
+# app/models/llm/llm_models.py
+class ProviderOption(BaseModel):
+    ''' O que o front recebe para montar os selects '''
+    id: str
+    name: str
+    models: list[str] = providers
+    default_model: str
+
+
+
 
 ''' 3 paramêtros. provider define a IA escolhida'''
 class ChatRequest(BaseModel):
