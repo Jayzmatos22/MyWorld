@@ -5,9 +5,17 @@ import os
 
 
 
-''' Serve para resposta de todas as IAs'''
+''' 3 paramêtros. provider define a IA escolhida'''
 class chatRequest(BaseModel):
-    model_choice: str 
+    question: str = Field(min_length=1, max_length=2000)
+    provider: str | None = None
+    model: str | None = None
+
+class ChatResponse(BaseModel):
+    provider: str
+    model: str
+    response: str
+
 
 '''Modelo - provedores atuais'''
 class Provider(BaseModel):
@@ -15,6 +23,7 @@ class Provider(BaseModel):
     base_url: str
     env_key: str
     standard_model: str
+
 
 PROVIDERS = {
     "nvidia": Provider(
@@ -36,11 +45,6 @@ PROVIDERS = {
         os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
     ),
 }
-
-
-class ChatResponse(BaseModel):
-    model: str
-    response: str
 
 
 
