@@ -11,7 +11,7 @@ from pydantic import TypeAdapter, ValidationError
 
 from app.config.nasa import APOD_URL
 from app.exceptions import ApiServerError, ApodNotFoundError
-from app.models.apod import ApodItem, ApodResponse
+from app.models.nasa.apod import ApodItem, ApodResponse
 from app.services.nasa.client import basic_request, fetch_between, fetch_position, int_header
 from app.services.nasa.parser import valid_items
 

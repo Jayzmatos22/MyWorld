@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query
 from datetime import date
-from app.models.apod import ApodResponse, ApodItem
+from app.models.nasa.apod import ApodResponse, ApodItem
 from app.exceptions import ContractApiError
 from app.services.nasa import (
     get_general_apod_response,

@@ -5,7 +5,7 @@ import re
 
 from pydantic import ValidationError
 
-from app.models.apod import ApodItem, ApodResponse
+from app.models.nasa.apod import ApodItem, ApodResponse
 
 
 logger = logging.getLogger("uvicorn.error")
