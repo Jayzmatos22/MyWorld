@@ -1,8 +1,7 @@
+''' Falhas vindas da NASA '''
+
 class ApiServerError(Exception):
     status_code = 503
-
-class ContractApiError(Exception):
-    status_code = 400
 
 class ApodNotFoundError(Exception):
     status_code = 404
