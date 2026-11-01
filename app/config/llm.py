@@ -1,8 +1,6 @@
 ''' Provedores de IA (todos expõem API compatível com a da OpenAI) '''
-from pydantic import BaseModel
-
 from app.config.settings import settings
-
+from app.models.llm.llm_models import Provider
 
 NVIDIA_URL = "https://integrate.api.nvidia.com/v1"
 GROQ_URL = "https://api.groq.com/openai/v1"
@@ -17,31 +15,26 @@ ID_GROQ = "groq"
 ID_GOOGLE = "google"
 
 
-'''Modelo - provedores atuais'''
-class Provider(BaseModel):
-    name: str
-    base_url: str
-    env_key: str
-    standard_model: str
-
-
 PROVIDERS = {
     ID_NVIDIA: Provider(
         name=NVIDIA_NAME_PROVIDER,
         base_url=NVIDIA_URL,
         env_key="NVIDIA_API_KEY",
         standard_model=settings.standard_nvidia_model,
+        models=[settings.standard_nvidia_model],
     ),
     ID_GROQ: Provider(
         name=GROQ_NAME_PROVIDER,
         base_url=GROQ_URL,
         env_key="GROQ_API_KEY",
         standard_model=settings.groq_standard_model,
+        models=[settings.groq_standard_model],
     ),
     ID_GOOGLE: Provider(
         name=GOOGLE_AI_NAME_PROVIDER,
-        base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-        env_key=GOOGLE_AI_URL,
+        base_url=GOOGLE_AI_URL,
+        env_key="GEMINI_API_KEY",
         standard_model=settings.gemini_standard_model,
+        models=[settings.gemini_standard_model],
     ),
 }

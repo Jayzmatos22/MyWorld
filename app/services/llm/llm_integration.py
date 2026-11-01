@@ -10,7 +10,9 @@ from app.config.llm import PROVIDERS
 from functools import lru_cache
 from app.exceptions.llm import ContractLLMError
 
-from app.models.llm import ChatRequest, ChatResponse, ProviderOption
+from app.models.llm.llm_models import ChatRequest, ChatResponse, ProviderOption
+from app.config import settings
+
 
 
 
@@ -20,8 +22,11 @@ from app.models.llm import ChatRequest, ChatResponse, ProviderOption
 '''Obter client padrão'''
 @lru_cache
 def get_client(pid: str) -> OpenAI:
-    provider = PROVIDERS.get(pid)
-    return OpenAI(base_url=provider.base_url, api_key=os.getenv(provider.env_key))
+    provider = PROVIDERS[pid]
+    key = getattr(settings, provider.env_key.lower())   # "GROQ_API_KEY" → settings.groq_api_key
+    if key is None:
+        raise ContractLLMError(f"Chave {provider.env_key} não configurada.")
+    return OpenAI(base_url=provider.base_url, api_key=key.get_secret_value())
 
 
 # opções
