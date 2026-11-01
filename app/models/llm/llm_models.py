@@ -1,27 +1,24 @@
 ''' Modelos de ia'''
 from pydantic import BaseModel, field_validator, Field
-from app.config.llm import ID_GOOGLE, ID_GROQ, ID_NVIDIA
+from typing import Literal
 
 
 
-providers: list[str] = [ID_GOOGLE, ID_GROQ, ID_NVIDIA]
-
-
-'''Modelo - provedores atuais'''
+''' Modelo - provedores atuais.
+Não importar app.config aqui: o config/llm.py já importa este arquivo (importação circular) '''
 class Provider(BaseModel):
     name: str
     base_url: str
     env_key: str
     standard_model: str
-    models: list[str] = providers
+    models: list[str]  # nomes de modelo liberados para o select (ex.: "openai/gpt-oss-20b")
 
 
-# app/models/llm/llm_models.py
 class ProviderOption(BaseModel):
     ''' O que o front recebe para montar os selects '''
     id: str
     name: str
-    models: list[str] = providers
+    models: list[str]
     default_model: str
 
 
@@ -30,7 +27,7 @@ class ProviderOption(BaseModel):
 ''' 3 paramêtros. provider define a IA escolhida'''
 class ChatRequest(BaseModel):
     question: str = Field(min_length=1, max_length=2000, description="A pergunta deve ter de 1 a 2000 caracteres")
-    provider: str | None = None
+    provider: Literal["nvidia", "groq", "google"]
     model: str | None = None
 
 class ChatResponse(BaseModel):

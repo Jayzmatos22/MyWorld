@@ -1,4 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import SecretStr
+
 
 
 ''' Variáveis lidas do ambiente (ou do .env).
@@ -7,6 +9,10 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     nasa_api_key: str = "DEMO_KEY"
+    nvidia_api_key: SecretStr | None = None
+    groq_api_key: SecretStr | None = None
+    gemini_api_key: SecretStr | None = None
+    
     cors_origins: list[str] = ["http://localhost:5173"]
 
     default_provider: str = "nvidia"
