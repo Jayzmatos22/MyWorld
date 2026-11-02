@@ -1,6 +1,8 @@
 ''' Modelos de ia'''
-from pydantic import BaseModel, field_validator, Field
+from pydantic import BaseModel, Field
 from typing import Literal
+from datetime import date
+
 
 
 
@@ -29,6 +31,7 @@ class ChatRequest(BaseModel):
     question: str = Field(min_length=1, max_length=2000, description="A pergunta deve ter de 1 a 2000 caracteres")
     provider: Literal["nvidia", "groq", "google"]
     model: str | None = None
+    date: date
 
 class ChatResponse(BaseModel):
     provider: str

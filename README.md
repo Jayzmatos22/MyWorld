@@ -139,7 +139,7 @@ Crie um arquivo `.env` na raiz (veja [Variáveis de ambiente](#variáveis-de-amb
 # Provedores de IA (configure só os que for usar)
 NVIDIA_API_KEY=...
 GROQ_API_KEY=...
-GEMINI_API_KEY=...
+GOOGLE_API_KEY=...
 ```
 
 Inicie a API:
@@ -177,10 +177,10 @@ O front sobe em `http://localhost:5173`. Em desenvolvimento, o Vite encaminha `/
 |---|---|---|---|
 | `NVIDIA_API_KEY` | Para usar NVIDIA | — | Chave do NVIDIA Build |
 | `GROQ_API_KEY` | Para usar Groq | — | Chave do Groq |
-| `GEMINI_API_KEY` | Para usar Google | — | Chave do Google AI Studio |
+| `GOOGLE_API_KEY` | Para usar Google | — | Chave do Google AI Studio |
 | `STANDARD_NVIDIA_MODEL` | Não | `openai/gpt-oss-20b` | Modelo padrão da NVIDIA |
 | `GROQ_STANDARD_MODEL` | Não | `openai/gpt-oss-20b` | Modelo padrão do Groq |
-| `GEMINI_STANDARD_MODEL` | Não | `gemini-2.5-flash` | Modelo padrão do Google |
+| `GOOGLE_STANDARD_MODEL` | Não | `gemini-3.5-flash` | Modelo padrão do Google |
 | `CORS_ORIGINS` | Em produção | `["http://localhost:5173"]` | Origens liberadas, em formato JSON |
 
 O arquivo APOD **não precisa de chave**: o `science.nasa.gov` é público. As chaves de IA são lidas como `SecretStr` e nunca aparecem em logs nem em respostas da API.

@@ -1,22 +1,13 @@
-import os
-import time
-from dataclasses import dataclass
-
-from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
-from openai import APIStatusError, OpenAI
-from app.config.llm import PROVIDERS
 from functools import lru_cache
-from app.exceptions.llm import ContractLLMError
 
-from app.models.llm.llm_models import ChatRequest, ChatResponse, ProviderOption
+from openai import OpenAI
+
 from app.config import settings
-
-
-
-
-
+from app.config.llm import PROVIDERS
+from app.exceptions.llm import ContractLLMError
+from app.models.llm.llm_models import ChatRequest, ChatResponse, ProviderOption
+from app.services.llm.prompts import build_messages
+from app.services.nasa import get_apod_by_date
 
 
 '''Obter client padrão'''
@@ -26,7 +17,8 @@ def get_client(pid: str) -> OpenAI:
     key = getattr(settings, provider.env_key.lower())   # "GROQ_API_KEY" → settings.groq_api_key
     if key is None:
         raise ContractLLMError(f"Chave {provider.env_key} não configurada.")
-    return OpenAI(base_url=provider.base_url, api_key=key.get_secret_value())
+    # Sem timeout a lib espera ~10 min e ainda repete 2x; o Lambda corta em 29s
+    return OpenAI(base_url=provider.base_url, api_key=key.get_secret_value(), timeout=25, max_retries=1)
 
 
 # opções
@@ -37,6 +29,8 @@ def get_providers() -> list[ProviderOption]:
     ]
 
 
+# by_data já possui cache.
+# por data não confundi a api, pois alguém poderia editar o contexto
 def ask(req: ChatRequest) -> ChatResponse:
     provider = PROVIDERS[req.provider]
     model = req.model or provider.standard_model
@@ -44,9 +38,13 @@ def ask(req: ChatRequest) -> ChatResponse:
     if model not in provider.models:
         raise ContractLLMError(f"Modelo {model} não disponível em {provider.name}")
 
+    apod = get_apod_by_date(req.date)
+
     completion = get_client(req.provider).chat.completions.create(
         model=model,
-        messages=[{"role": "user", "content": req.question}],
+        messages=build_messages(apod, req.question),
+        temperature=0.2,                       # menos criatividade = mais preso ao contexto
+        max_tokens=600,
     )
     return ChatResponse(
         provider=req.provider, 
