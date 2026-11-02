@@ -33,8 +33,11 @@ PROVIDERS = {
     ID_GOOGLE: Provider(
         name=GOOGLE_AI_NAME_PROVIDER,
         base_url=GOOGLE_AI_URL,
-        env_key="GEMINI_API_KEY",
-        standard_model=settings.gemini_standard_model,
-        models=[settings.gemini_standard_model],
+        env_key="GOOGLE_API_KEY",
+        standard_model=settings.google_standard_model,
+        models=[settings.google_standard_model],
     ),
 }
+
+ERROR_PROMPT = "Pergunta fora do escopo permitido. Por gentileza, refaça a pergunta"
+CONTEXT_AND_ROLES_PROMPT = f"Para qualquer pergunta, responda apenas aquelas cujo assunto está relacionao à astronomia (a API da NASA está sendo usada como fonte de resposta). Retorne {ERROR_PROMPT} como mensagem para qualquer pergunta fora do contexto geral da astronomia, estrelas, planetas"

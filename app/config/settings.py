@@ -11,14 +11,15 @@ class Settings(BaseSettings):
     nasa_api_key: str = "DEMO_KEY"
     nvidia_api_key: SecretStr | None = None
     groq_api_key: SecretStr | None = None
-    gemini_api_key: SecretStr | None = None
+    google_api_key: SecretStr | None = None
     
     cors_origins: list[str] = ["http://localhost:5173"]
 
     default_provider: str = "nvidia"
     standard_nvidia_model: str = "openai/gpt-oss-20b"
     groq_standard_model: str = "openai/gpt-oss-20b"
-    gemini_standard_model: str = "gemini-2.5-flash"
+    # gemini-2.5-flash foi desativado pelo Google para contas novas (404)
+    google_standard_model: str = "gemini-3.5-flash"
 
 
 settings = Settings()
