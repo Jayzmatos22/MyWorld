@@ -9,6 +9,8 @@ from app.models.llm.llm_models import ChatRequest, ChatResponse, ProviderOption
 from app.services.llm.prompts import build_messages
 from app.services.nasa import get_apod_by_date
 
+MAX_TOKENS = 2000
+
 
 '''Obter client padrão'''
 @lru_cache
@@ -44,10 +46,13 @@ def ask(req: ChatRequest) -> ChatResponse:
         model=model,
         messages=build_messages(apod, req.question),
         temperature=0.2,                       # menos criatividade = mais preso ao contexto
-        max_tokens=600,
+        # modelos de raciocínio (gpt-oss, nemotron) gastam tokens "pensando" antes de responder;
+        # com 600 a resposta saía cortada no meio da frase
+        max_tokens=MAX_TOKENS,
     )
-    return ChatResponse(
-        provider=req.provider, 
-        model=model, 
-        response=completion.choices[0].message.content or ""
-    )
+    choice = completion.choices[0]
+    response = choice.message.content or ""
+    if choice.finish_reason == "length":       # bateu no limite: avisa em vez de parar no meio
+        response = f"{response.rstrip()}… (resposta interrompida pelo limite de tamanho)"
+
+    return ChatResponse(provider=req.provider, model=model, response=response)
