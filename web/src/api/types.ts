@@ -29,6 +29,30 @@ export interface ApodOther extends ApodBase {
 export type Apod = ApodImage | ApodVideo | ApodOther
 export type MediaType = Apod['media_type']
 
+/** Provedores de IA aceitos pelo back-end (`POST /llm/chat`). */
+export type ProviderId = 'nvidia' | 'groq' | 'google'
+
+export interface ProviderOption {
+  id: ProviderId
+  name: string
+  models: string[]
+  default_model: string
+}
+
+/** A IA responde só sobre o APOD de `date`: o back-end busca o contexto na NASA. */
+export interface ChatInput {
+  provider: ProviderId
+  model: string
+  question: string
+  date: IsoDate
+}
+
+export interface ChatAnswer {
+  provider: ProviderId
+  model: string
+  response: string
+}
+
 /** Corpo de erro devolvido pelo FastAPI. */
 export type ApiErrorCode = 'rate_limited' | 'not_found' | 'bad_request' | 'unavailable'
 
