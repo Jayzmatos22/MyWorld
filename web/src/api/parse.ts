@@ -1,6 +1,6 @@
 import { isIsoDate } from '@/lib/date'
 import { ApiError } from './errors'
-import type { Apod, ApiErrorBody, ApiErrorCode } from './types'
+import type { Apod, ApiErrorBody, ApiErrorCode, ChatAnswer, ProviderId, ProviderOption } from './types'
 
 /*
  * Validação em runtime da resposta: o TypeScript só confia no que foi checado.
@@ -58,7 +58,39 @@ export function parseApodList(value: unknown): Apod[] {
   return value.map(parseApod)
 }
 
-const ERROR_CODES: readonly ApiErrorCode[] = ['rate_limited', 'not_found', 'bad_request', 'unavailable']
+const PROVIDER_IDS: readonly ProviderId[] = ['nvidia', 'groq', 'google']
+
+function providerId(value: unknown): ProviderId | null {
+  return PROVIDER_IDS.find((id) => id === value) ?? null
+}
+
+function strList(obj: JsonObject, key: string): string[] {
+  const value = obj[key]
+  if (!Array.isArray(value) || !value.every((item): item is string => typeof item === 'string')) {
+    throw invalid(`campo "${key}" não é uma lista de textos`)
+  }
+  return value
+}
+
+/** Provedor desconhecido é ignorado: o back-end pode ganhar um novo antes do front. */
+export function parseProviders(value: unknown): ProviderOption[] {
+  if (!Array.isArray(value)) throw invalid('lista esperada')
+  return value.flatMap((item: unknown): ProviderOption[] => {
+    if (!isObject(item)) throw invalid('provedor não é um objeto')
+    const id = providerId(item.id)
+    if (!id) return []
+    return [{ id, name: str(item, 'name'), models: strList(item, 'models'), default_model: str(item, 'default_model') }]
+  })
+}
+
+export function parseChatAnswer(value: unknown): ChatAnswer {
+  if (!isObject(value)) throw invalid('resposta não é um objeto')
+  const provider = providerId(value.provider)
+  if (!provider) throw invalid('provedor desconhecido')
+  return { provider, model: str(value, 'model'), response: str(value, 'response') }
+}
+
+const ERROR_CODES: readonly ApiErrorCode[] =['rate_limited', 'not_found', 'bad_request', 'unavailable']
 
 export function parseErrorBody(value: unknown): ApiErrorBody | null {
   if (!isObject(value)) return null

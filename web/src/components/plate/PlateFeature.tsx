@@ -10,6 +10,7 @@ import { TextSkeleton, PlateSkeleton } from '@/components/ui/Skeleton'
 import { CropMarks } from './CropMarks'
 import { PlateFacts } from './PlateFacts'
 import { PlateMedia } from './PlateMedia'
+import { PlateAsk } from './PlateAsk'
 
 interface PlateFeatureProps {
   apod: Apod
@@ -83,6 +84,11 @@ export function PlateFeature({ apod, eyebrow, transitionName, navigation }: Plat
         <p lang="en" className="drop-cap max-w-(--container-measure) text-body text-ink/90">
           {apod.explanation}
         </p>
+      </Reveal>
+
+      {/* key: trocar de placa (← → nos detalhes) zera a conversa */}
+      <Reveal index={3} className="col-span-full md:col-span-6 md:col-start-5 lg:col-span-5 lg:col-start-6">
+        <PlateAsk key={apod.date} date={apod.date} />
       </Reveal>
 
       {navigation ? <div className="col-span-full md:hidden">{navigation}</div> : null}

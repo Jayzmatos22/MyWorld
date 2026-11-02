@@ -1,12 +1,15 @@
-import type { IsoDate } from './types'
+import type { ChatInput, IsoDate } from './types'
 import { ApiError, kindFromStatus } from './errors'
-import { parseApod, parseApodList, parseErrorBody } from './parse'
+import { parseApod, parseApodList, parseChatAnswer, parseErrorBody, parseProviders } from './parse'
 
 const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? '/api'
 
-async function request<T>(path: string, parse: (json: unknown) => T, signal?: AbortSignal): Promise<T> {
+/** Com `body`, vira POST com JSON; sem, GET. */
+async function request<T>(path: string, parse: (json: unknown) => T, signal?: AbortSignal, body?: unknown): Promise<T> {
+  const hasBody = body !== undefined
   const response = await fetch(`${BASE_URL}${path}`, {
-    headers: { Accept: 'application/json' },
+    headers: { Accept: 'application/json', ...(hasBody ? { 'Content-Type': 'application/json' } : {}) },
+    ...(hasBody ? { method: 'POST', body: JSON.stringify(body) } : {}),
     ...(signal ? { signal } : {}),
   })
 
@@ -35,4 +38,10 @@ export const apodApi = {
     request(`/apod/range?start=${start}&end=${end}`, parseApodList, signal),
 
   random: (count: number, signal?: AbortSignal) => request(`/apod/random?count=${count}`, parseApodList, signal),
+}
+
+export const llmApi = {
+  providers: (signal?: AbortSignal) => request('/llm/providers', parseProviders, signal),
+
+  chat: (input: ChatInput, signal?: AbortSignal) => request('/llm/chat', parseChatAnswer, signal, input),
 }
