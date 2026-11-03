@@ -53,6 +53,21 @@ export interface ChatAnswer {
   response: string
 }
 
+/** Curtidas: contador global por placa, repetível (como views). */
+export interface LikeCount {
+  date: IsoDate
+  likes: number
+}
+
+/** Item do ranking: o back-end guarda título e prévia, sem depender da NASA. */
+export interface RankedPlate {
+  date: IsoDate
+  title: string
+  media_type: MediaType
+  thumb: string | null
+  likes: number
+}
+
 /** Corpo de erro devolvido pelo FastAPI. */
 export type ApiErrorCode = 'rate_limited' | 'not_found' | 'bad_request' | 'unavailable'
 

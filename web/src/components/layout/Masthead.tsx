@@ -1,5 +1,4 @@
 import { NavLink } from "react-router";
-import { useFavorites } from "@/hooks/useFavorites";
 import {
   archiveVolume,
   dayOfYear,
@@ -19,7 +18,6 @@ const NAV = [
 
 export function Masthead() {
   const today = todayIso();
-  const favorites = useFavorites();
 
   return (
     <header className="relative z-10 [view-transition-name:masthead]">
@@ -80,11 +78,6 @@ export function Masthead() {
                   }
                 >
                   {item.label}
-                  {item.to === "/favoritos" && favorites.length > 0 ? (
-                    <span className="tabular text-amber">
-                      {favorites.length}
-                    </span>
-                  ) : null}
                 </NavLink>
               </li>
             ))}

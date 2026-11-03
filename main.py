@@ -5,6 +5,7 @@ from app.config import settings
 from app.exceptions.handlers import register_exception_handlers
 from app.routers.nasa import apod
 from app.routers.llm import llm
+from app.routers.likes import likes
 
 
 
@@ -18,6 +19,7 @@ app.add_middleware(
 )
 app.include_router(apod.router)
 app.include_router(llm.router)
+app.include_router(likes.router)
 register_exception_handlers(app)
 
 handler = Mangum(app)

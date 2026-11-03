@@ -4,7 +4,7 @@ import { formatPlateDate, formatWeekday, plateCode } from '@/lib/date'
 import { nasaPermalink } from '@/lib/media'
 import { Reveal } from '@/components/ui/Reveal'
 import { SplitTitle } from '@/components/ui/SplitTitle'
-import { FavoriteButton } from '@/components/ui/FavoriteButton'
+import { LikeButton } from '@/components/ui/LikeButton'
 import { ExternalAction } from '@/components/ui/ActionLink'
 import { TextSkeleton, PlateSkeleton } from '@/components/ui/Skeleton'
 import { CropMarks } from './CropMarks'
@@ -70,7 +70,7 @@ export function PlateFeature({ apod, eyebrow, transitionName, navigation }: Plat
 
       <Reveal as="aside" index={1} className="col-span-full flex flex-col gap-8 md:col-span-3 md:row-span-2">
         <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
-          <FavoriteButton apod={apod} />
+          <LikeButton key={apod.date} date={apod.date} />
           {apod.media_type === 'image' && apod.hdurl ? (
             <ExternalAction href={apod.hdurl}>Alta resolução</ExternalAction>
           ) : null}

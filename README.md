@@ -140,6 +140,16 @@ Crie um arquivo `.env` na raiz (veja [Variáveis de ambiente](#variáveis-de-amb
 NVIDIA_API_KEY=...
 GROQ_API_KEY=...
 GOOGLE_API_KEY=...
+
+# DynamoDB Local (curtidas e rate limit)
+DYNAMODB_ENDPOINT=http://localhost:8002
+```
+
+Curtidas, ranking e o rate limit do chat usam DynamoDB. Localmente, rode o DynamoDB Local e crie a tabela uma vez:
+
+```bash
+docker run -p 8002:8000 amazon/dynamodb-local   # 8002: a 8000 é da API
+python scripts/create_local_table.py
 ```
 
 Inicie a API:
@@ -182,6 +192,9 @@ O front sobe em `http://localhost:5173`. Em desenvolvimento, o Vite encaminha `/
 | `GROQ_STANDARD_MODEL` | Não | `openai/gpt-oss-20b` | Modelo padrão do Groq |
 | `GOOGLE_STANDARD_MODEL` | Não | `gemini-3.5-flash` | Modelo padrão do Google |
 | `CORS_ORIGINS` | Em produção | `["http://localhost:5173"]` | Origens liberadas, em formato JSON |
+| `TABLE_NAME` | Não | `myworld-local` | Tabela do DynamoDB (no Lambda, o template injeta) |
+| `DYNAMODB_ENDPOINT` | Só local | — | Endpoint do DynamoDB Local |
+| `RATE_LIMIT_SECRET` | Em produção | chave aleatória por processo | Chave do HMAC que anonimiza os IPs no rate limit |
 
 O arquivo APOD **não precisa de chave**: o `science.nasa.gov` é público. As chaves de IA são lidas como `SecretStr` e nunca aparecem em logs nem em respostas da API.
 
@@ -249,6 +262,20 @@ curl -X POST http://127.0.0.1:8000/llm/chat \
 | `question` | `string` | 1 a 2000 caracteres |
 | `model` | `string \| null` | Opcional. Sem valor, usa o modelo padrão do provedor; com valor, precisa estar entre os modelos liberados. |
 
+### Curtidas
+
+Curtida repetível, como views: qualquer visitante pode curtir quantas vezes quiser, limitado a 30 por minuto por IP. A página de favoritos mostra o ranking.
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `GET` | `/likes/top` | Ranking, `limit`: 1–50 (padrão 30) |
+| `GET` | `/likes/{day}` | Total de curtidas de uma data |
+| `POST` | `/likes/{day}` | Soma +1 e devolve o total |
+
+```json
+{ "date": "2024-01-01", "likes": 31 }
+```
+
 ### Formato de erro
 
 Os erros do domínio seguem um envelope único, que o front trata de forma tipada:
@@ -259,12 +286,10 @@ Os erros do domínio seguem um envelope único, que o front trata de forma tipad
 
 | HTTP | `code` | Quando |
 |---|---|---|
-| `400` | `bad_request` | Parâmetro fora das regras (data, intervalo, modelo, chave de IA ausente) |
-| `404` | `not_found` | Não existe APOD para a data pedida |
-| `429` | `rate_limited` | Limite da NASA atingido. Inclui o header `Retry-After` quando disponível. |
-| `503` | `unavailable` | NASA indisponível ou com resposta inválida |
-
-Erros de validação de schema (tipo ou formato errado) seguem o padrão do FastAPI: `422` com a lista de campos em `detail`.
+| `400` | `bad_request` | Parâmetro fora das regras ou com tipo/formato errado (data, intervalo, modelo, pergunta) |
+| `404` | `not_found` | Não existe APOD para a data pedida, ou rota inexistente |
+| `429` | `rate_limited` | Limite da NASA, do provedor de IA ou da própria API (curtidas, chat). Inclui `Retry-After` quando disponível. |
+| `503` | `unavailable` | NASA, provedor de IA ou banco indisponível, lento ou com resposta inválida |
 
 ## Decisões técnicas
 
@@ -274,6 +299,8 @@ Erros de validação de schema (tipo ou formato errado) seguem o padrão do Fast
 - **Cache em memória com TTL por tipo de dado.** Datas passadas: 24 h. Placa do dia: 30 min, porque a NASA às vezes publica com atraso. Intervalos: 1 h.
 - **Sorteio sem viés.** Com `per_page=1`, cada página da `apod-basic` é um APOD. O sorteio escolhe páginas distintas em todo o acervo e busca todas em paralelo, com até 8 threads.
 - **Timeouts explícitos** (5 s de conexão, 25 s de leitura) e mapeamento de cada falha da NASA para uma exceção do domínio.
+- **Rate limit no DynamoDB, sem guardar IP.** Contador por janela fixa, atualizado com uma única escrita condicional. O IP vira um HMAC com chave secreta e o registro expira por TTL. O IP vem do `requestContext` da Function URL; o `X-Forwarded-For` é ignorado, porque o cliente pode escrever qualquer coisa nele.
+- **DynamoDB provisionado dentro do free tier.** 5 RCU/5 WCU na tabela e no índice. Se passar disso, a tabela recusa a requisição (503) em vez de cobrar.
 - **Provedores de IA como dados.** Os três provedores usam o mesmo SDK `openai`, mudando só `base_url` e chave. Adicionar um provedor é uma entrada nova em `config/llm.py`.
 
 ## Deploy
@@ -290,7 +317,9 @@ A URL pública aparece no output `Url` do stack.
 **Checklist de produção**
 - Configure as chaves de IA e o `CORS_ORIGINS` no Lambda. O `.env` é só para desenvolvimento; para chaves, prefira o AWS Secrets Manager.
 - Confirme que o `.env` não é empacotado no artefato do SAM: o `CodeUri: ./` inclui a pasta inteira, e o `.gitignore` não vale para o SAM.
-- A Function URL está com `AuthType: NONE` (pública). Avalie limitar a taxa de requisições no `/llm/chat`, que consome cota paga dos provedores.
+- Passe a chave do rate limit no deploy: `sam deploy --parameter-overrides RateLimitSecret=$(python -c "import secrets; print(secrets.token_hex(32))")`. Guarde o valor: trocar a chave só zera os contadores em andamento.
+- A tabela do DynamoDB tem `DeletionPolicy: Retain`: apagar o stack não apaga as curtidas.
+- Crie um AWS Budget de US$ 1 com alerta por e-mail como rede de segurança.
 - Gere o build do front com `VITE_API_URL` apontando para a URL do Lambda: `VITE_API_URL=https://… npm run build`.
 
 ## Contribuindo

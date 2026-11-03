@@ -13,6 +13,8 @@ export interface SheetItem {
   title: string
   mediaType: MediaType
   thumb: string | null
+  /** Rótulo no lugar do código da placa (ex.: curtidas no ranking) */
+  badge?: string
 }
 
 export function toSheetItem(apod: Apod): SheetItem {
@@ -109,7 +111,11 @@ function SheetCell({ item, index, offset }: { item: SheetItem; index: number; of
           <span className="label-mono tabular text-ink-muted transition-colors duration-(--duration-quick) group-hover:text-amber">
             {formatPlateDate(item.date)}
           </span>
-          <span className="label-mono tabular hidden text-ink-faint sm:inline">{plateCode(item.date)}</span>
+          {item.badge ? (
+            <span className="label-mono tabular text-amber">{item.badge}</span>
+          ) : (
+            <span className="label-mono tabular hidden text-ink-faint sm:inline">{plateCode(item.date)}</span>
+          )}
         </div>
         <h3 className="mt-1.5 text-title text-ink">{item.title}</h3>
       </Link>

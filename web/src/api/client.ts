@@ -1,6 +1,14 @@
 import type { ChatInput, IsoDate } from './types'
 import { ApiError, kindFromStatus } from './errors'
-import { parseApod, parseApodList, parseChatAnswer, parseErrorBody, parseProviders } from './parse'
+import {
+  parseApod,
+  parseApodList,
+  parseChatAnswer,
+  parseErrorBody,
+  parseLikeCount,
+  parseProviders,
+  parseRanking,
+} from './parse'
 
 const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? '/api'
 
@@ -44,4 +52,13 @@ export const llmApi = {
   providers: (signal?: AbortSignal) => request('/llm/providers', parseProviders, signal),
 
   chat: (input: ChatInput, signal?: AbortSignal) => request('/llm/chat', parseChatAnswer, signal, input),
+}
+
+export const likesApi = {
+  count: (date: IsoDate, signal?: AbortSignal) => request(`/likes/${date}`, parseLikeCount, signal),
+
+  /** Corpo vazio só para virar POST: a curtida é identificada pela data */
+  like: (date: IsoDate, signal?: AbortSignal) => request(`/likes/${date}`, parseLikeCount, signal, {}),
+
+  top: (limit: number, signal?: AbortSignal) => request(`/likes/top?limit=${limit}`, parseRanking, signal),
 }

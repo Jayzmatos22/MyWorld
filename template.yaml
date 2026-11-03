@@ -1,6 +1,13 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 
+Parameters:
+  RateLimitSecret:
+    Type: String
+    NoEcho: true
+    MinLength: 32
+    Description: Chave do HMAC que anonimiza os IPs no rate limit (gere com "python -c 'import secrets; print(secrets.token_hex(32))'")
+
 Resources:
   MyWorldFunction:
     Type: AWS::Serverless::Function
@@ -12,6 +19,13 @@ Resources:
       Timeout: 30
       FunctionUrlConfig:
         AuthType: NONE
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref MyWorldTable
+          RATE_LIMIT_SECRET: !Ref RateLimitSecret
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MyWorldTable
 
   MyWorldLogs:
     Type: AWS::Logs::LogGroup
@@ -19,6 +33,47 @@ Resources:
       LogGroupName: /aws/lambda/MyWorldFunction
       RetentionInDays: 7
 
+  # Curtidas + contadores do rate limit. PROVISIONED dentro do free tier permanente
+  # (25 RCU/25 WCU somando tabela e índices): passou disso, a tabela recusa em vez de cobrar.
+  # Não ligar auto scaling, PITR nem Streams: saem do gratuito.
+  MyWorldTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain          # apagar a stack não apaga as curtidas
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PROVISIONED
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: rank_pk
+          AttributeType: S
+        - AttributeName: likes
+          AttributeType: N
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      GlobalSecondaryIndexes:
+        # Só os APODs curtidos têm rank_pk: os contadores do rate limit ficam fora do índice
+        - IndexName: by-likes
+          KeySchema:
+            - AttributeName: rank_pk
+              KeyType: HASH
+            - AttributeName: likes
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+      TimeToLiveSpecification:
+        AttributeName: expires_at
+        Enabled: true
+
 Outputs:
   Url:
     Value: !GetAtt MyWorldFunctionUrl.FunctionUrl
+  TableName:
+    Value: !Ref MyWorldTable
