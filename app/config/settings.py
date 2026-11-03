@@ -21,5 +21,12 @@ class Settings(BaseSettings):
     # gemini-2.5-flash foi desativado pelo Google para contas novas (404)
     google_standard_model: str = "gemini-3.5-flash"
 
+    # DynamoDB: no Lambda o template injeta TABLE_NAME e a AWS define AWS_REGION
+    table_name: str = "myworld-local"
+    aws_region: str = "us-east-1"
+    dynamodb_endpoint: str | None = None       # ex.: http://localhost:8000 para o DynamoDB Local
+    # Chave do HMAC que anonimiza o IP no rate limit (o IP em si nunca é gravado)
+    rate_limit_secret: SecretStr | None = None
+
 
 settings = Settings()

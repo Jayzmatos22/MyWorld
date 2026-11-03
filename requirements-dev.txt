@@ -1,4 +1,6 @@
 -r requirements.txt
+# DynamoDB: o runtime do Lambda já traz o boto3, então ele só entra no ambiente local
+boto3
 uvicorn==0.40.0
 # Faz o requests confiar nos certificados do Windows (necessário com o AVG inspecionando HTTPS)
 pip-system-certs==5.3

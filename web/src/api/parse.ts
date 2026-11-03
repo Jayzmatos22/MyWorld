@@ -1,6 +1,17 @@
 import { isIsoDate } from '@/lib/date'
 import { ApiError } from './errors'
-import type { Apod, ApiErrorBody, ApiErrorCode, ChatAnswer, ProviderId, ProviderOption } from './types'
+import type {
+  Apod,
+  ApiErrorBody,
+  ApiErrorCode,
+  ChatAnswer,
+  IsoDate,
+  LikeCount,
+  MediaType,
+  ProviderId,
+  ProviderOption,
+  RankedPlate,
+} from './types'
 
 /*
  * Validação em runtime da resposta: o TypeScript só confia no que foi checado.
@@ -88,6 +99,41 @@ export function parseChatAnswer(value: unknown): ChatAnswer {
   const provider = providerId(value.provider)
   if (!provider) throw invalid('provedor desconhecido')
   return { provider, model: str(value, 'model'), response: str(value, 'response') }
+}
+
+function num(obj: JsonObject, key: string): number {
+  const value = obj[key]
+  if (typeof value !== 'number' || !Number.isFinite(value)) throw invalid(`campo "${key}" não é número`)
+  return value
+}
+
+function isoDate(obj: JsonObject, key: string): IsoDate {
+  const value = str(obj, key)
+  if (!isIsoDate(value)) throw invalid(`data "${value}" inválida`)
+  return value
+}
+
+export function parseLikeCount(value: unknown): LikeCount {
+  if (!isObject(value)) throw invalid('contagem não é um objeto')
+  return { date: isoDate(value, 'date'), likes: num(value, 'likes') }
+}
+
+const MEDIA_TYPES: readonly MediaType[] = ['image', 'video', 'other']
+
+export function parseRanking(value: unknown): RankedPlate[] {
+  if (!Array.isArray(value)) throw invalid('lista esperada')
+  return value.map((item: unknown): RankedPlate => {
+    if (!isObject(item)) throw invalid('item do ranking não é um objeto')
+    const mediaType = MEDIA_TYPES.find((m) => m === item.media_type)
+    if (!mediaType) throw invalid('media_type desconhecido')
+    return {
+      date: isoDate(item, 'date'),
+      title: str(item, 'title'),
+      media_type: mediaType,
+      thumb: optStr(item, 'thumb'),
+      likes: num(item, 'likes'),
+    }
+  })
 }
 
 const ERROR_CODES: readonly ApiErrorCode[] =['rate_limited', 'not_found', 'bad_request', 'unavailable']

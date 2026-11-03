@@ -22,7 +22,7 @@ function copyFor(error: ApiError): Copy {
           <>
             A NASA limita quantas observações podem ser pedidas por hora.{' '}
             {minutes ? `Tente de novo em cerca de ${minutes} min.` : 'A cota se renova em até uma hora.'} As placas
-            que você já abriu e os seus favoritos continuam disponíveis.
+            que você já abriu e o ranking de favoritos continuam disponíveis.
           </>
         ),
       }
