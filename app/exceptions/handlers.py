@@ -1,48 +1,66 @@
 ''' Converte as exceções no corpo de erro que o front espera: {"message", "code"} '''
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.exceptions.nasa import ApiServerError, ApodNotFoundError, RateLimitError
-from app.exceptions.llm import ContractLLMError
-from app.exceptions.request import ContractApiError
+from app.exceptions.base import AppError
 
 
-def out_air_api_server_error(request: Request, exc: ApiServerError):
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"message": "Erro ao acessar a API da NASA.", "code": "unavailable"},
-    )
+# Nomes dos campos como o usuário entende (body do chat e query/path do APOD)
+FIELD_LABELS = {
+    "question": "pergunta",
+    "provider": "provedor",
+    "model": "modelo",
+    "date": "data",
+    "day": "data",
+    "start": "data inicial",
+    "end": "data final",
+    "count": "quantidade",
+}
 
-def rate_limit_error(request: Request, exc: RateLimitError):
-    headers = {"Retry-After": str(exc.retry_after)} if exc.retry_after else None
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"message": str(exc), "code": "rate_limited"},
-        headers=headers,
-    )
+HTTP_MESSAGES = {404: "Rota não encontrada.", 405: "Método não permitido."}
 
-def not_found_error(request: Request, exc: ApodNotFoundError):
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"message": str(exc), "code": "not_found"},
-    )
 
-def contract_error(request: Request, exc: ContractApiError):
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"message": str(exc), "code": "bad_request"},
-    )
+def error_response(status_code: int, message: str, code: str, headers: dict[str, str] | None = None) -> JSONResponse:
+    return JSONResponse(status_code=status_code, content={"message": message, "code": code}, headers=headers)
 
-def contract_llm_error(request: Request, exc: ContractLLMError):
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"message": str(exc), "code": "bad_request"},
-    )
+
+def app_error(request: Request, exc: AppError) -> JSONResponse:
+    return error_response(exc.status_code, str(exc), exc.code, exc.headers)
+
+
+def describe_validation(error: dict) -> str:
+    field = str(error["loc"][-1]) if error.get("loc") else ""
+    label = FIELD_LABELS.get(field, field)
+    match error["type"]:
+        case "missing":
+            return f"Campo obrigatório ausente: {label}."
+        case "string_too_short":
+            return f"O campo {label} não pode ficar vazio."
+        case "string_too_long":
+            return f"O campo {label} passou do limite de {error['ctx']['max_length']} caracteres."
+        case "json_invalid":
+            return "Corpo da requisição não é um JSON válido."
+        case _:
+            return f"Valor inválido no campo {label}."
+
+
+def validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
+    ''' O FastAPI responderia 422 com {"detail": [...]}, que o front não entende '''
+    errors = exc.errors()
+    message = describe_validation(errors[0]) if errors else "Pedido inválido."
+    return error_response(400, message, "bad_request")
+
+
+def http_error(request: Request, exc: StarletteHTTPException) -> JSONResponse:
+    ''' Rota inexistente, método errado... '''
+    code = "not_found" if exc.status_code == 404 else "unavailable" if exc.status_code >= 500 else "bad_request"
+    message = HTTP_MESSAGES.get(exc.status_code, str(exc.detail))
+    return error_response(exc.status_code, message, code, exc.headers)
 
 
 def register_exception_handlers(app: FastAPI) -> None:
-    app.add_exception_handler(ApiServerError, out_air_api_server_error)
-    app.add_exception_handler(RateLimitError, rate_limit_error)
-    app.add_exception_handler(ApodNotFoundError, not_found_error)
-    app.add_exception_handler(ContractApiError, contract_error)
-    app.add_exception_handler(ContractLLMError, contract_llm_error)
+    app.add_exception_handler(AppError, app_error)
+    app.add_exception_handler(RequestValidationError, validation_error)
+    app.add_exception_handler(StarletteHTTPException, http_error)
