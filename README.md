@@ -10,6 +10,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
 ![AWS Lambda](https://img.shields.io/badge/AWS_Lambda-SAM-FF9900?logo=awslambda&logoColor=white)
+![Amazon DynamoDB](https://img.shields.io/badge/Amazon_DynamoDB-free_tier-4053D6?logo=amazondynamodb&logoColor=white)
 
 </div>
 
@@ -34,8 +35,8 @@
 
 O **MyWorld** apresenta cada APOD como uma "placa" de um arquivo astronômico. Cada placa traz uma composição editorial, a mídia em destaque (imagem ou vídeo), a explicação original e os metadados da observação. O projeto tem duas partes:
 
-- **Back-end em FastAPI.** Busca e normaliza os dados do APOD no `science.nasa.gov`, com cache e tratamento de erros, e serve de ponte para três provedores de LLM compatíveis com a API da OpenAI.
-- **Front-end em React 19.** Uma SPA com TypeScript estrito, um céu animado (nebulosa em CSS e campo de estrelas em canvas) e navegação por data, intervalo, sorteio e favoritos.
+- **Back-end em FastAPI.** Busca e normaliza os dados do APOD no `science.nasa.gov`, com cache e tratamento de erros, serve de ponte para três provedores de LLM compatíveis com a API da OpenAI e guarda as curtidas no **Amazon DynamoDB**.
+- **Front-end em React 19.** Uma SPA com TypeScript estrito, um céu animado (nebulosa em CSS e campo de estrelas em canvas) e navegação por data, intervalo, sorteio e pelo ranking das placas mais curtidas.
 
 ## Funcionalidades
 
@@ -44,13 +45,23 @@ O **MyWorld** apresenta cada APOD como uma "placa" de um arquivo astronômico. C
 - Navegação por qualquer data desde **16/06/1995**
 - Galeria por intervalo de até **31 dias**
 - Seleção aleatória de 1 a 20 placas de todo o acervo
-- Favoritos salvos no navegador
 - Suporte a imagem, vídeo e mídias interativas, com URL extraída do HTML quando a NASA não fornece campo próprio
+
+**Curtidas e ranking**
+- Curtida repetível, como views: qualquer visitante pode curtir uma placa quantas vezes quiser
+- Contador otimista no front, que se corrige com o valor do servidor
+- Página de favoritos com o ranking da comunidade, sem depender da NASA para carregar
 
 **Assistente de IA**
 - Três provedores: **NVIDIA Build**, **Groq** e **Google AI Studio**
 - Lista de provedores e modelos servida pelo back-end, que é a única fonte da verdade
 - Validação de provedor e modelo no servidor, independente do que o cliente enviar
+- Respostas baseadas no APOD da data, que o back-end busca (o cliente não consegue trocar o contexto)
+
+**Proteção contra abuso**
+- Rate limit por cliente nas curtidas (30/min) e no chat (6/min e 60/dia)
+- O IP é anonimizado com HMAC e nunca é gravado; os contadores expiram sozinhos
+- Erros padronizados em `{"message", "code"}`, inclusive as falhas dos provedores de IA
 
 ## Arquitetura
 
@@ -61,7 +72,12 @@ O **MyWorld** apresenta cada APOD como uma "placa" de um arquivo astronômico. C
 │                      │        │  produção: AWS Lambda + Mangum│        └───────────────────────────┘
 │  proxy /api → :8000  │        │                               │        ┌───────────────────────────┐
 │  (só em dev)         │        │  routers → services → clients │ ─────▶ │  NVIDIA · Groq · Google   │
-└──────────────────────┘        └───────────────────────────────┘        │  (API compatível OpenAI)  │
+└──────────────────────┘        │                               │        │  (API compatível OpenAI)  │
+                                │                               │        └───────────────────────────┘
+                                │                               │        ┌───────────────────────────┐
+                                │                               │ ─────▶ │  Amazon DynamoDB          │
+                                └───────────────────────────────┘        │  curtidas + rate limit    │
+                                                                          │  (local: DynamoDB Local)  │
                                                                           └───────────────────────────┘
 ```
 
@@ -70,7 +86,7 @@ O back-end segue camadas com responsabilidades separadas:
 | Camada | Responsabilidade |
 |---|---|
 | `routers/` | Recebe o HTTP, valida parâmetros e delega ao service |
-| `services/` | Regras de negócio, cache e orquestração das chamadas externas |
+| `services/` | Regras de negócio, cache, acesso ao DynamoDB, rate limit e orquestração das chamadas externas |
 | `models/` | Schemas Pydantic de entrada e saída |
 | `config/` | Configuração tipada (`Settings`), endpoints e registro de provedores |
 | `exceptions/` | Exceções do domínio e handlers que as convertem em respostas HTTP padronizadas |
@@ -79,9 +95,10 @@ O back-end segue camadas com responsabilidades separadas:
 
 | Área | Tecnologias |
 |---|---|
-| **Back-end** | Python 3.13, FastAPI, Pydantic v2, pydantic-settings, Requests, cachetools, BeautifulSoup, SDK `openai` |
+| **Back-end** | Python 3.13, FastAPI, Pydantic v2, pydantic-settings, Requests, cachetools, BeautifulSoup, SDK `openai`, boto3 |
 | **Front-end** | React 19, TypeScript 5.9 (strict), React Router 7, Tailwind CSS 4, Vite 7, Lucide |
-| **Infraestrutura** | AWS Lambda (Python 3.13) via AWS SAM, Lambda Function URL, Mangum, CloudWatch Logs |
+| **Infraestrutura** | AWS Lambda (Python 3.13) via AWS SAM, Lambda Function URL, Mangum, Amazon DynamoDB, CloudWatch Logs |
+| **Desenvolvimento** | DynamoDB Local (Docker) |
 
 ## Estrutura do repositório
 
@@ -90,28 +107,38 @@ MyWorld/
 ├── main.py                     # App FastAPI, CORS, routers, handlers e entrypoint do Lambda (Mangum)
 ├── template.yaml               # Infraestrutura (AWS SAM)
 ├── requirements.txt            # Dependências de produção
-├── requirements-dev.txt        # + uvicorn e utilitários de desenvolvimento
+├── requirements-dev.txt        # + uvicorn, boto3 e utilitários de desenvolvimento
+├── scripts/
+│   └── create_local_table.py   # Cria a tabela no DynamoDB Local
 ├── app/
 │   ├── config/
 │   │   ├── settings.py         # Settings: variáveis de ambiente / .env
 │   │   ├── nasa.py             # Endpoints da NASA
-│   │   └── llm.py              # Registro dos provedores de IA
+│   │   ├── llm.py              # Registro dos provedores de IA
+│   │   └── rate_limit.py       # Regras do rate limit (limite e janela)
 │   ├── exceptions/
-│   │   ├── nasa.py · llm.py · request.py
+│   │   ├── base.py             # AppError: status, code e mensagem padrão
+│   │   ├── nasa.py · llm.py · request.py · database.py
 │   │   └── handlers.py         # Exceção → {"message", "code"}
 │   ├── models/
 │   │   ├── nasa/apod.py        # ApodResponse (bruto) e ApodItem (para o front)
-│   │   └── llm/llm_models.py   # ChatRequest, ChatResponse, Provider, ProviderOption
+│   │   ├── llm/llm_models.py   # ChatRequest, ChatResponse, Provider, ProviderOption
+│   │   └── likes/likes.py      # LikeCount, RankedPlate
 │   ├── routers/
 │   │   ├── nasa/apod.py        # /apod
-│   │   └── llm/llm.py          # /llm
+│   │   ├── llm/llm.py          # /llm
+│   │   └── likes/likes.py      # /likes
 │   └── services/
 │       ├── nasa/
 │       │   ├── client.py       # HTTP, paginação e tratamento de erros da NASA
 │       │   ├── parser.py       # JSON bruto → ApodItem
 │       │   └── apod_service.py # Funções públicas com cache
-│       └── llm/
-│           └── llm_integration.py
+│       ├── llm/
+│       │   ├── llm_integration.py # Chamada aos provedores e tradução dos erros
+│       │   └── prompts.py      # Prompt com o APOD como contexto
+│       ├── db/dynamo.py        # Tabela do DynamoDB e tradução dos erros do boto3
+│       ├── likes/likes_service.py # Curtir, contar e ranking
+│       └── rate_limit/rate_limit.py # Janela fixa no DynamoDB, IP anonimizado
 └── web/                        # Front-end (detalhes em web/README.md)
 ```
 
@@ -121,6 +148,7 @@ MyWorld/
 
 - **Python 3.13**
 - **Node.js 20.19+** (exigido pelo Vite 7)
+- **Docker**, para o DynamoDB Local (curtidas, ranking e rate limit do chat)
 - Chave de API de pelo menos um provedor de IA, se for usar o assistente
 
 ### 1. Back-end
@@ -178,6 +206,15 @@ O front sobe em `http://localhost:5173`. Em desenvolvimento, o Vite encaminha `/
 | `npm run typecheck` | Só a checagem de tipos |
 | `npm run lint` | ESLint |
 | `npm run preview` | Serve o build localmente |
+
+### Problemas comuns
+
+| Sintoma | Causa e solução |
+|---|---|
+| `"O banco de dados não respondeu"` ao curtir ou perguntar | DynamoDB Local parado ou `DYNAMODB_ENDPOINT` ausente no `.env`. Rode `docker start dynamodb-local` e confirme a variável |
+| Mudei o `.env` e nada mudou | O `--reload` só observa o código. Pare o uvicorn (Ctrl+C) e suba de novo |
+| A API parece ignorar o código novo | Pode haver outro uvicorn antigo na porta 8000. No Windows: `netstat -ano \| findstr :8000` e `taskkill /PID <pid> /T /F` |
+| `python-dotenv could not parse statement` | Comentários no `.env` usam `#`, não `'''` |
 
 ## Variáveis de ambiente
 
@@ -249,17 +286,18 @@ A documentação interativa completa fica em `/docs` (Swagger) e `/redoc`.
 ```bash
 curl -X POST http://127.0.0.1:8000/llm/chat \
   -H "Content-Type: application/json" \
-  -d '{"provider": "groq", "question": "O que é uma nebulosa planetária?"}'
+  -d '{"provider": "groq", "date": "2024-01-01", "question": "Essa galáxia é rara?"}'
 ```
 
 ```json
-{ "provider": "groq", "model": "openai/gpt-oss-20b", "response": "Uma nebulosa planetária é…" }
+{ "provider": "groq", "model": "openai/gpt-oss-20b", "response": "A descrição não menciona isso, mas em geral…" }
 ```
 
 | Campo | Tipo | Regra |
 |---|---|---|
 | `provider` | `"nvidia" \| "groq" \| "google"` | Obrigatório |
 | `question` | `string` | 1 a 2000 caracteres |
+| `date` | `AAAA-MM-DD` | Obrigatório. A IA responde com base no APOD dessa data |
 | `model` | `string \| null` | Opcional. Sem valor, usa o modelo padrão do provedor; com valor, precisa estar entre os modelos liberados. |
 
 ### Curtidas
