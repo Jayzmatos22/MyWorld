@@ -39,7 +39,7 @@ def get_general_apod_response(page: int, per_page: int) -> list[ApodResponse]:
     try:
         return TypeAdapter(list[ApodResponse]).validate_python(data)
     except ValidationError as e:
-        raise ValueError("Erro ao validar a resposta da API da NASA.") from e
+        raise ApiServerError("Resposta inválida da NASA.") from e
 
 
 today_cache = TTLCache(maxsize=1, ttl=1800)  # 30 min: o APOD do dia pode ser publicado com atraso
