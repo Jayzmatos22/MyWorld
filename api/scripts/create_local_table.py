@@ -2,7 +2,7 @@
 
     docker run -p 8002:8000 amazon/dynamodb-local     # 8002: a 8000 é da API
     # .env: DYNAMODB_ENDPOINT=http://localhost:8002
-    python scripts/create_local_table.py
+    python api/scripts/create_local_table.py
 '''
 import sys
 from pathlib import Path
