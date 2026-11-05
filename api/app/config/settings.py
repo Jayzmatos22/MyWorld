@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     dynamodb_endpoint: str | None = None       # ex.: http://localhost:8000 para o DynamoDB Local
     # Chave do HMAC que anonimiza o IP no rate limit (o IP em si nunca é gravado)
     rate_limit_secret: SecretStr | None = None
+    # /docs, /redoc e /openapi.json: úteis em dev, desligados em produção (o template define false)
+    enable_docs: bool = True
 
     @field_validator("nvidia_api_key", "groq_api_key", "google_api_key", "rate_limit_secret", mode="before")
     @classmethod

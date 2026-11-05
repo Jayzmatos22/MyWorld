@@ -24,6 +24,17 @@ Parameters:
     NoEcho: true
     Default: ""
     Description: Chave do Google AI Studio (vazio = provedor desligado)
+  AlertEmail:
+    Type: String
+    Default: ""
+    Description: E-mail para alertas de custo e de tráfego anormal (vazio = sem e-mail; o disjuntor funciona igual)
+  MaxApiRequestsPer5Min:
+    Type: Number
+    Default: 15000
+    Description: Acima disso em 5 min, o disjuntor desliga a API (concorrência reservada 0) até você religar
+
+Conditions:
+  HasAlertEmail: !Not [!Equals [!Ref AlertEmail, ""]]
 
 Resources:
   # ---------- API ----------
@@ -46,6 +57,7 @@ Resources:
           NVIDIA_API_KEY: !Ref NvidiaApiKey
           GROQ_API_KEY: !Ref GroqApiKey
           GOOGLE_API_KEY: !Ref GoogleApiKey
+          ENABLE_DOCS: "false"      # sem /docs, /redoc e /openapi.json em produção
           # O front chama a Function URL direto (não pelo CloudFront): assim o rate limit vê o IP real
           CORS_ORIGINS: !Sub '["https://${FrontDistribution.DomainName}"]'
       Policies:
@@ -77,9 +89,10 @@ Resources:
       KeySchema:
         - AttributeName: pk
           KeyType: HASH
+      # 10 + 5 do índice = 15 de 25 grátis. Cada pedido com rate limit gasta 1 escrita por regra
       ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
+        ReadCapacityUnits: 10
+        WriteCapacityUnits: 10
       GlobalSecondaryIndexes:
         # Só os APODs curtidos têm rank_pk: os contadores do rate limit ficam fora do índice
         - IndexName: by-likes
@@ -138,7 +151,7 @@ Resources:
           AllowedMethods: [GET, HEAD]
           Compress: true
           CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6          # Managed-CachingOptimized
-          ResponseHeadersPolicyId: 67f7725c-6f97-4210-82d7-5512b31e9d03 # Managed-SecurityHeadersPolicy
+          ResponseHeadersPolicyId: !Ref FrontHeadersPolicy
         # SPA: /placa/2024-01-01 não existe no bucket (o S3 responde 403); devolve o index.html
         # e o React Router resolve a rota
         CustomErrorResponses:
@@ -150,6 +163,35 @@ Resources:
             ResponseCode: 200
             ResponsePagePath: /index.html
             ErrorCachingMinTTL: 0
+
+  # Headers de segurança do site. A CSP só deixa rodar script do próprio domínio, só conecta
+  # na Function URL e só embute players do YouTube/Vimeo: um script injetado não executa nem vaza dados
+  FrontHeadersPolicy:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: !Sub ${AWS::StackName}-front-headers
+        SecurityHeadersConfig:
+          ContentSecurityPolicy:
+            Override: true
+            ContentSecurityPolicy: !Sub "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https:; media-src 'self' https:; font-src 'self'; connect-src 'self' https://*.lambda-url.${AWS::Region}.on.aws; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+          ContentTypeOptions:
+            Override: true
+          FrameOptions:
+            FrameOption: DENY
+            Override: true
+          ReferrerPolicy:
+            ReferrerPolicy: strict-origin-when-cross-origin
+            Override: true
+          StrictTransportSecurity:
+            AccessControlMaxAgeSec: 63072000
+            IncludeSubdomains: true
+            Override: true
+        CustomHeadersConfig:
+          Items:
+            - Header: Permissions-Policy
+              Value: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+              Override: true
 
   FrontBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -166,6 +208,108 @@ Resources:
               StringEquals:
                 AWS:SourceArn: !Sub arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${FrontDistribution}
 
+  # ---------- Proteção de custo (DDoS) ----------
+  # A Function URL é pública: rate limit por IP não segura um ataque de muitos IPs.
+  # O disjuntor corta a API (concorrência 0 = Lambda não executa, nada é cobrado) quando o
+  # volume foge do normal. Para religar: aws lambda delete-function-concurrency --function-name <FunctionName>
+  AlertTopic:
+    Type: AWS::SNS::Topic
+
+  AlertEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: HasAlertEmail
+    Properties:
+      TopicArn: !Ref AlertTopic
+      Protocol: email
+      Endpoint: !Ref AlertEmail
+
+  KillSwitchTopic:
+    Type: AWS::SNS::Topic
+
+  KillSwitchLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/MyWorldKillSwitch
+      RetentionInDays: 7
+
+  KillSwitchFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.13
+      Handler: index.handler
+      Timeout: 10
+      MemorySize: 128
+      LoggingConfig:
+        LogGroup: !Ref KillSwitchLogs
+      Environment:
+        Variables:
+          TARGET_FUNCTION: !Ref MyWorldFunction
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: lambda:PutFunctionConcurrency
+              Resource: !GetAtt MyWorldFunction.Arn
+      Events:
+        Alarm:
+          Type: SNS
+          Properties:
+            Topic: !Ref KillSwitchTopic
+      InlineCode: |
+        import os
+        import boto3
+
+        def handler(event, context):
+            target = os.environ["TARGET_FUNCTION"]
+            boto3.client("lambda").put_function_concurrency(FunctionName=target, ReservedConcurrentExecutions=0)
+            print(f"Disjuntor acionado: {target} com concorrência 0")
+
+  ApiTrafficAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Volume anormal na API - o disjuntor desligou a Function URL
+      Namespace: AWS/Lambda
+      MetricName: Invocations
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref MyWorldFunction
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: !Ref MaxApiRequestsPer5Min
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref KillSwitchTopic
+        - !Ref AlertTopic
+
+  # Teto de gasto: avisa por e-mail com 50% e 100% de US$ 2 (cerca de R$ 10) no mês
+  MonthlyBudget:
+    Type: AWS::Budgets::Budget
+    Condition: HasAlertEmail
+    Properties:
+      Budget:
+        BudgetName: !Sub ${AWS::StackName}-mensal
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit:
+          Amount: 2
+          Unit: USD
+      NotificationsWithSubscribers:
+        - Notification:
+            NotificationType: ACTUAL
+            ComparisonOperator: GREATER_THAN
+            Threshold: 50
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address: !Ref AlertEmail
+        - Notification:
+            NotificationType: FORECASTED
+            ComparisonOperator: GREATER_THAN
+            Threshold: 100
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address: !Ref AlertEmail
+
 Outputs:
   Url:
     Description: URL da API (Function URL)
@@ -179,3 +323,6 @@ Outputs:
     Value: !Ref FrontDistribution
   TableName:
     Value: !Ref MyWorldTable
+  FunctionName:
+    Description: Para religar a API depois do disjuntor - aws lambda delete-function-concurrency --function-name <este valor>
+    Value: !Ref MyWorldFunction

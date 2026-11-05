@@ -4,7 +4,7 @@
     .\deploy.ps1              # tudo
     .\deploy.ps1 -FrontOnly   # só o front (a API já está no ar)
 
-  As chaves vêm do .env da raiz (RATE_LIMIT_SECRET obrigatória; chaves de IA opcionais)
+  As chaves vêm do .env da raiz (RATE_LIMIT_SECRET obrigatória; chaves de IA e ALERT_EMAIL opcionais)
   e vão como parâmetros NoEcho do template: nenhum segredo fica no samconfig.toml.
 #>
 param([switch]$FrontOnly)
@@ -47,6 +47,8 @@ if (-not $FrontOnly) {
         if ($env_[$pair[0]]) { $overrides += "$($pair[1])=$($env_[$pair[0]])" }
         else { Write-Warning "$($pair[0]) ausente no .env: esse provedor fica desligado em produção." }
     }
+    if ($env_['ALERT_EMAIL']) { $overrides += "AlertEmail=$($env_['ALERT_EMAIL'])" }
+    else { Write-Warning 'ALERT_EMAIL ausente no .env: sem e-mail de alerta de custo (o disjuntor da API funciona igual).' }
 
     Write-Host "`n== API: sam build ==" -ForegroundColor Cyan
     Push-Location $Root
