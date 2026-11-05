@@ -104,41 +104,44 @@ O back-end segue camadas com responsabilidades separadas:
 
 ```
 MyWorld/
-├── main.py                     # App FastAPI, CORS, routers, handlers e entrypoint do Lambda (Mangum)
-├── template.yaml               # Infraestrutura (AWS SAM)
-├── requirements.txt            # Dependências de produção
-├── requirements-dev.txt        # + uvicorn, boto3 e utilitários de desenvolvimento
-├── scripts/
-│   └── create_local_table.py   # Cria a tabela no DynamoDB Local
-├── app/
-│   ├── config/
-│   │   ├── settings.py         # Settings: variáveis de ambiente / .env
-│   │   ├── nasa.py             # Endpoints da NASA
-│   │   ├── llm.py              # Registro dos provedores de IA
-│   │   └── rate_limit.py       # Regras do rate limit (limite e janela)
-│   ├── exceptions/
-│   │   ├── base.py             # AppError: status, code e mensagem padrão
-│   │   ├── nasa.py · llm.py · request.py · database.py
-│   │   └── handlers.py         # Exceção → {"message", "code"}
-│   ├── models/
-│   │   ├── nasa/apod.py        # ApodResponse (bruto) e ApodItem (para o front)
-│   │   ├── llm/llm_models.py   # ChatRequest, ChatResponse, Provider, ProviderOption
-│   │   └── likes/likes.py      # LikeCount, RankedPlate
-│   ├── routers/
-│   │   ├── nasa/apod.py        # /apod
-│   │   ├── llm/llm.py          # /llm
-│   │   └── likes/likes.py      # /likes
-│   └── services/
-│       ├── nasa/
-│       │   ├── client.py       # HTTP, paginação e tratamento de erros da NASA
-│       │   ├── parser.py       # JSON bruto → ApodItem
-│       │   └── apod_service.py # Funções públicas com cache
-│       ├── llm/
-│       │   ├── llm_integration.py # Chamada aos provedores e tradução dos erros
-│       │   └── prompts.py      # Prompt com o APOD como contexto
-│       ├── db/dynamo.py        # Tabela do DynamoDB e tradução dos erros do boto3
-│       ├── likes/likes_service.py # Curtir, contar e ranking
-│       └── rate_limit/rate_limit.py # Janela fixa no DynamoDB, IP anonimizado
+├── template.yaml               # Infraestrutura: API, DynamoDB, S3 e CloudFront (AWS SAM)
+├── deploy.ps1                  # Deploy completo: API + front
+├── .env                        # Só local (não versionado): chaves e DynamoDB Local
+├── api/                        # Back-end: é só esta pasta que vai para o Lambda
+│   ├── main.py                 # App FastAPI, CORS, routers, handlers e entrypoint do Lambda (Mangum)
+│   ├── requirements.txt        # Dependências de produção
+│   ├── requirements-dev.txt    # + uvicorn, boto3 e utilitários de desenvolvimento
+│   ├── scripts/
+│   │   └── create_local_table.py # Cria a tabela no DynamoDB Local
+│   └── app/
+│       ├── config/
+│       │   ├── settings.py     # Settings: variáveis de ambiente / .env
+│       │   ├── nasa.py         # Endpoints da NASA
+│       │   ├── llm.py          # Registro dos provedores de IA
+│       │   └── rate_limit.py   # Regras do rate limit (limite e janela)
+│       ├── exceptions/
+│       │   ├── base.py         # AppError: status, code e mensagem padrão
+│       │   ├── nasa.py · llm.py · request.py · database.py
+│       │   └── handlers.py     # Exceção → {"message", "code"}
+│       ├── models/
+│       │   ├── nasa/apod.py    # ApodResponse (bruto) e ApodItem (para o front)
+│       │   ├── llm/llm_models.py # ChatRequest, ChatResponse, Provider, ProviderOption
+│       │   └── likes/likes.py  # LikeCount, RankedPlate
+│       ├── routers/
+│       │   ├── nasa/apod.py    # /apod
+│       │   ├── llm/llm.py      # /llm
+│       │   └── likes/likes.py  # /likes
+│       └── services/
+│           ├── nasa/
+│           │   ├── client.py   # HTTP, paginação e tratamento de erros da NASA
+│           │   ├── parser.py   # JSON bruto → ApodItem
+│           │   └── apod_service.py # Funções públicas com cache
+│           ├── llm/
+│           │   ├── llm_integration.py # Chamada aos provedores e tradução dos erros
+│           │   └── prompts.py  # Prompt com o APOD como contexto
+│           ├── db/dynamo.py    # Tabela do DynamoDB e tradução dos erros do boto3
+│           ├── likes/likes_service.py # Curtir, contar e ranking
+│           └── rate_limit/rate_limit.py # Janela fixa no DynamoDB, IP anonimizado
 └── web/                        # Front-end (detalhes em web/README.md)
 ```
 
@@ -158,10 +161,10 @@ MyWorld/
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 
-pip install -r requirements-dev.txt
+pip install -r api/requirements-dev.txt
 ```
 
-Crie um arquivo `.env` na raiz (veja [Variáveis de ambiente](#variáveis-de-ambiente)):
+Crie um arquivo `.env` na **raiz** do repositório, fora de `api/` (veja [Variáveis de ambiente](#variáveis-de-ambiente)):
 
 ```dotenv
 # Provedores de IA (configure só os que for usar)
@@ -177,13 +180,13 @@ Curtidas, ranking e o rate limit do chat usam DynamoDB. Localmente, rode o Dynam
 
 ```bash
 docker run -p 8002:8000 amazon/dynamodb-local   # 8002: a 8000 é da API
-python scripts/create_local_table.py
+python api/scripts/create_local_table.py
 ```
 
 Inicie a API:
 
 ```bash
-uvicorn main:app --reload
+uvicorn main:app --app-dir api --reload    # ou: cd api && uvicorn main:app --reload
 ```
 
 - API: `http://127.0.0.1:8000`
@@ -343,28 +346,55 @@ Os erros do domínio seguem um envelope único, que o front trata de forma tipad
 
 ## Deploy
 
-O back-end roda como uma função **AWS Lambda** com **Function URL**, provisionada por **AWS SAM**. O `main.handler` usa o Mangum para adaptar o FastAPI ao Lambda.
+Tudo fica num único stack do **AWS SAM** (`template.yaml`):
 
-```bash
-sam build
-sam deploy --guided   # na primeira vez; depois, apenas: sam deploy
+| Parte | Recursos | Custo |
+|---|---|---|
+| API | Lambda (`api/`, Python 3.13) + Function URL + Mangum | Free tier permanente: 1 milhão de requisições/mês |
+| Banco | DynamoDB provisionado 5/5 + índice 5/5 | Free tier permanente: 25 RCU/25 WCU |
+| Front | S3 privado + CloudFront (Origin Access Control, HTTPS, headers de segurança) | Free tier permanente do CloudFront: 1 TB e 10 milhões de requisições/mês; S3: frações de centavo |
+| Logs | CloudWatch, retenção de 7 dias | Free tier: 5 GB/mês |
+
+Sem domínio próprio, o site fica em `https://xxxx.cloudfront.net` e o custo é zero dentro dessas cotas.
+
+**Pré-requisitos:** AWS CLI configurado (`aws configure`), AWS SAM CLI, Node.js e, no `.env` da raiz:
+
+```dotenv
+RATE_LIMIT_SECRET=...      # python -c "import secrets; print(secrets.token_hex(32))"
+GROQ_API_KEY=...           # e/ou NVIDIA_API_KEY, GOOGLE_API_KEY (provedor sem chave fica desligado)
 ```
 
-A URL pública aparece no output `Url` do stack.
+**Deploy** (PowerShell, na raiz):
 
-**Checklist de produção**
-- Configure as chaves de IA e o `CORS_ORIGINS` no Lambda. O `.env` é só para desenvolvimento; para chaves, prefira o AWS Secrets Manager.
-- Confirme que o `.env` não é empacotado no artefato do SAM: o `CodeUri: ./` inclui a pasta inteira, e o `.gitignore` não vale para o SAM.
-- Passe a chave do rate limit no deploy: `sam deploy --parameter-overrides RateLimitSecret=$(python -c "import secrets; print(secrets.token_hex(32))")`. Guarde o valor: trocar a chave só zera os contadores em andamento.
-- A tabela do DynamoDB tem `DeletionPolicy: Retain`: apagar o stack não apaga as curtidas.
+```powershell
+.\deploy.ps1              # API + front
+.\deploy.ps1 -FrontOnly   # só o front, quando a API não mudou
+```
+
+O script:
+1. Lê as chaves do `.env` e passa como parâmetros `NoEcho`. Nenhum segredo fica no `samconfig.toml` nem no git.
+2. Roda `sam build` e `sam deploy`. Na primeira vez, o CloudFront leva de 5 a 15 minutos para ficar pronto.
+3. Faz o build do front com `VITE_API_URL` = Function URL.
+4. Envia para o S3 (assets com hash: cache de 1 ano; `index.html`: `no-cache`) e invalida o `index.html` no CloudFront.
+
+O `CORS_ORIGINS` do Lambda é preenchido pelo próprio template com o endereço do CloudFront.
+
+**Decisões**
+- O front chama a Function URL **direto**, não por dentro do CloudFront. Pelo CloudFront, a API veria o IP do CloudFront, e o rate limit por cliente deixaria de funcionar.
+- Só a pasta `api/` vai para o Lambda (pacote de cerca de 22 MB). O `web/`, o `.env` e os scripts locais ficam de fora.
+- As chaves de IA viram variáveis de ambiente do Lambda, criptografadas em repouso. O Secrets Manager custaria cerca de US$ 0,40 por chave por mês.
+
+**Checklist**
 - Crie um AWS Budget de US$ 1 com alerta por e-mail como rede de segurança.
-- Gere o build do front com `VITE_API_URL` apontando para a URL do Lambda: `VITE_API_URL=https://… npm run build`.
+- A tabela do DynamoDB tem `DeletionPolicy: Retain`: apagar o stack não apaga as curtidas.
+- Guarde o `RATE_LIMIT_SECRET`: trocar a chave só zera os contadores de rate limit em andamento.
+- Contas criadas depois de jul/2025 começam no plano gratuito de 6 meses. Confira em aws.amazon.com/free o que acontece depois dele.
 
 ## Contribuindo
 
 1. Crie uma branch a partir da `main`: `feat/…`, `fix/…`, `refactor/…`, `chore/…`
 2. Use [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `refactor:`, `style:`, `docs:`, `chore:`
-3. Antes de abrir o PR, rode `npm run typecheck` e `npm run lint` em `web/`, e confirme que a API sobe com `uvicorn main:app`
+3. Antes de abrir o PR, rode `npm run typecheck` e `npm run lint` em `web/`, e confirme que a API sobe com `uvicorn main:app --app-dir api`
 4. Abra um Pull Request para a `main` com um resumo e o plano de teste
 
 ## Créditos

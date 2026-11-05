@@ -6,8 +6,8 @@ Front-end do arquivo APOD (React 19 + TypeScript estrito + Tailwind v4 + Vite).
 
 ```bash
 # 1. back-end (na raiz do repositório)
-pip install -r requirements.txt uvicorn
-uvicorn main:app --reload          # http://localhost:8000
+pip install -r api/requirements-dev.txt
+uvicorn main:app --app-dir api --reload   # http://localhost:8000
 
 # 2. front-end
 cd web

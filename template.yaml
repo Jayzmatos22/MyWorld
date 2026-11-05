@@ -1,28 +1,53 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
+Description: MyWorld - API (Lambda + Function URL + DynamoDB) e front (S3 + CloudFront)
 
+# Valores secretos: o deploy.ps1 lê do .env e passa aqui. NoEcho esconde no console e na API.
 Parameters:
   RateLimitSecret:
     Type: String
     NoEcho: true
     MinLength: 32
     Description: Chave do HMAC que anonimiza os IPs no rate limit (gere com "python -c 'import secrets; print(secrets.token_hex(32))'")
+  NvidiaApiKey:
+    Type: String
+    NoEcho: true
+    Default: ""
+    Description: Chave do NVIDIA Build (vazio = provedor desligado)
+  GroqApiKey:
+    Type: String
+    NoEcho: true
+    Default: ""
+    Description: Chave do Groq (vazio = provedor desligado)
+  GoogleApiKey:
+    Type: String
+    NoEcho: true
+    Default: ""
+    Description: Chave do Google AI Studio (vazio = provedor desligado)
 
 Resources:
+  # ---------- API ----------
   MyWorldFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ./
+      CodeUri: api/                 # só o back-end: o web/ (com node_modules) não entra no pacote
       Handler: main.handler
       Runtime: python3.13
       MemorySize: 512
       Timeout: 30
       FunctionUrlConfig:
         AuthType: NONE
+      LoggingConfig:
+        LogGroup: !Ref MyWorldLogs  # sem isso os logs iam para um grupo sem retenção
       Environment:
         Variables:
           TABLE_NAME: !Ref MyWorldTable
           RATE_LIMIT_SECRET: !Ref RateLimitSecret
+          NVIDIA_API_KEY: !Ref NvidiaApiKey
+          GROQ_API_KEY: !Ref GroqApiKey
+          GOOGLE_API_KEY: !Ref GoogleApiKey
+          # O front chama a Function URL direto (não pelo CloudFront): assim o rate limit vê o IP real
+          CORS_ORIGINS: !Sub '["https://${FrontDistribution.DomainName}"]'
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref MyWorldTable
@@ -72,8 +97,85 @@ Resources:
         AttributeName: expires_at
         Enabled: true
 
+  # ---------- Front ----------
+  # Bucket privado: só o CloudFront lê (Origin Access Control)
+  FrontBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  FrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub ${AWS::StackName}-front
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  FrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: !Sub ${AWS::StackName} front
+        DefaultRootObject: index.html
+        HttpVersion: http2and3
+        PriceClass: PriceClass_All  # inclui a borda de São Paulo; o free tier de 1 TB/mês vale para todas
+        Origins:
+          - Id: front
+            DomainName: !GetAtt FrontBucket.RegionalDomainName
+            OriginAccessControlId: !GetAtt FrontOriginAccessControl.Id
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+        DefaultCacheBehavior:
+          TargetOriginId: front
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD]
+          Compress: true
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6          # Managed-CachingOptimized
+          ResponseHeadersPolicyId: 67f7725c-6f97-4210-82d7-5512b31e9d03 # Managed-SecurityHeadersPolicy
+        # SPA: /placa/2024-01-01 não existe no bucket (o S3 responde 403); devolve o index.html
+        # e o React Router resolve a rota
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 0
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 0
+
+  FrontBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub ${FrontBucket.Arn}/*
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${FrontDistribution}
+
 Outputs:
   Url:
+    Description: URL da API (Function URL)
     Value: !GetAtt MyWorldFunctionUrl.FunctionUrl
+  FrontUrl:
+    Description: Endereço do site
+    Value: !Sub https://${FrontDistribution.DomainName}
+  FrontBucketName:
+    Value: !Ref FrontBucket
+  FrontDistributionId:
+    Value: !Ref FrontDistribution
   TableName:
     Value: !Ref MyWorldTable
