@@ -2,6 +2,7 @@
 instâncias do Lambda (memória local zera a cada cold start e não é compartilhada) '''
 import hashlib
 import hmac
+import ipaddress
 import logging
 import math
 import secrets
@@ -14,6 +15,7 @@ from fastapi import Request
 
 from app.config import settings
 from app.config.rate_limit import RateRule
+from app.exceptions.database import DatabaseUnavailableError
 from app.exceptions.request import TooManyRequestsError
 from app.services.db.dynamo import dynamo_errors, error_code, get_table
 
@@ -21,6 +23,8 @@ from app.services.db.dynamo import dynamo_errors, error_code, get_table
 logger = logging.getLogger("uvicorn.error")
 
 TTL_MARGIN = 60   # o TTL do DynamoDB apaga com atraso; quem fecha a janela é a chave, não o TTL
+GLOBAL_KEY = "all"   # regras per_client=False: um contador só para todos os clientes
+IPV6_PREFIX = 64     # um cliente IPv6 costuma receber um /64 inteiro: trocar o endereço não pode zerar o limite
 
 
 @lru_cache
@@ -31,12 +35,25 @@ def secret_key() -> bytes:
     return secrets.token_bytes(32)
 
 
+def client_network(host: str) -> str:
+    ''' IPv4 conta por endereço; IPv6 pelo /64, senão um cliente gira bilhões de endereços '''
+    try:
+        address = ipaddress.ip_address(host)
+    except ValueError:
+        return host
+    if address.version == 4:
+        return str(address)
+    if address.ipv4_mapped is not None:         # ::ffff:1.2.3.4 é o IPv4 1.2.3.4
+        return str(address.ipv4_mapped)
+    return str(ipaddress.ip_network(f"{address}/{IPV6_PREFIX}", strict=False))
+
+
 def client_key(request: Request) -> str:
     ''' IP vira HMAC: dá para contar sem guardar o IP (LGPD).
     Na Function URL o IP vem do requestContext da AWS (o Mangum põe em request.client);
     X-Forwarded-For é ignorado de propósito, o cliente escreve o que quiser nele '''
-    ip = request.client.host if request.client else "unknown"
-    return hmac.new(secret_key(), ip.encode(), hashlib.sha256).hexdigest()[:32]
+    host = request.client.host if request.client else "unknown"
+    return hmac.new(secret_key(), client_network(host).encode(), hashlib.sha256).hexdigest()[:32]
 
 
 def hit(rule: RateRule, key: str, now: float | None = None) -> None:
@@ -63,5 +80,10 @@ def rate_limit(*rules: RateRule) -> Callable[[Request], None]:
     def check(request: Request) -> None:
         key = client_key(request)
         for rule in rules:
-            hit(rule, key)
+            try:
+                hit(rule, key if rule.per_client else GLOBAL_KEY)
+            except DatabaseUnavailableError:
+                if not rule.fail_open:
+                    raise
+                logger.warning("Rate limit %s sem banco: liberado (fail_open)", rule.name)
     return check

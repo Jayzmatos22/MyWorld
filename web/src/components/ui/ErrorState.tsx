@@ -20,7 +20,8 @@ function copyFor(error: ApiError): Copy {
         title: 'O telescópio precisa descansar.',
         body: (
           <>
-            A NASA limita quantas observações podem ser pedidas por hora.{' '}
+            {/* A mensagem vem do servidor: limite da NASA ou o rate limit da própria API */}
+            {error.message}{' '}
             {minutes ? `Tente de novo em cerca de ${minutes} min.` : 'A cota se renova em até uma hora.'} As placas
             que você já abriu e o ranking de favoritos continuam disponíveis.
           </>

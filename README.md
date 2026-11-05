@@ -28,6 +28,7 @@
 - [Referência da API](#referência-da-api)
 - [Decisões técnicas](#decisões-técnicas)
 - [Deploy](#deploy)
+- [Segurança](#segurança)
 - [Contribuindo](#contribuindo)
 - [Créditos](#créditos)
 
@@ -59,7 +60,9 @@ O **MyWorld** apresenta cada APOD como uma "placa" de um arquivo astronômico. C
 - Respostas baseadas no APOD da data, que o back-end busca (o cliente não consegue trocar o contexto)
 
 **Proteção contra abuso**
-- Rate limit por cliente nas curtidas (30/min) e no chat (6/min e 60/dia)
+- Rate limit por cliente: curtidas (30/min, 500/dia), chat (6/min, 60/dia), sorteio (10/min) e intervalo (30/min)
+- Teto global do chat (400 perguntas/dia somando todos os IPs) para proteger as chaves de IA
+- Disjuntor de custo: tráfego anormal desliga a API sozinho (ver [Segurança](#segurança))
 - O IP é anonimizado com HMAC e nunca é gravado; os contadores expiram sozinhos
 - Erros padronizados em `{"message", "code"}`, inclusive as falhas dos provedores de IA
 
@@ -362,6 +365,7 @@ Sem domínio próprio, o site fica em `https://xxxx.cloudfront.net` e o custo é
 ```dotenv
 RATE_LIMIT_SECRET=...      # python -c "import secrets; print(secrets.token_hex(32))"
 GROQ_API_KEY=...           # e/ou NVIDIA_API_KEY, GOOGLE_API_KEY (provedor sem chave fica desligado)
+ALERT_EMAIL=voce@exemplo.com   # opcional: alertas de custo e do disjuntor (confirme o e-mail da AWS)
 ```
 
 **Deploy** (PowerShell, na raiz):
@@ -389,6 +393,31 @@ O `CORS_ORIGINS` do Lambda é preenchido pelo próprio template com o endereço 
 - A tabela do DynamoDB tem `DeletionPolicy: Retain`: apagar o stack não apaga as curtidas.
 - Guarde o `RATE_LIMIT_SECRET`: trocar a chave só zera os contadores de rate limit em andamento.
 - Contas criadas depois de jul/2025 começam no plano gratuito de 6 meses. Confira em aws.amazon.com/free o que acontece depois dele.
+
+## Segurança
+
+| Ameaça | Proteção |
+|---|---|
+| Script malicioso (XSS) | Nenhum HTML vindo de fora é injetado: título, explicação e respostas da IA viram texto. CSP rígida no CloudFront (`script-src 'self'`, sem `unsafe-inline`): script injetado não executa e não envia dados para outro domínio |
+| Mídia de terceiros | Só YouTube e Vimeo viram player (iframe com `sandbox`); outras origens viram link. Links e vídeos só aceitam `http(s)` |
+| Clickjacking | `frame-ancestors 'none'` e `X-Frame-Options: DENY` |
+| Abuso por um cliente | Rate limit por IP no DynamoDB. IPv6 conta pelo `/64` (trocar de endereço não zera o limite). O IP vem do `requestContext` da AWS; o `X-Forwarded-For` é ignorado |
+| Abuso das chaves de IA | Limite por IP e teto global diário no chat; pergunta de no máximo 2000 caracteres; resposta de no máximo 2000 tokens |
+| DDoS e custo | Disjuntor: mais de 15.000 chamadas em 5 min (parâmetro `MaxApiRequestsPer5Min`) põe a concorrência da API em 0. A Lambda para de executar e não cobra. Budget de US$ 2/mês com alerta por e-mail. DynamoDB provisionado recusa em vez de cobrar |
+| Amplificação na NASA | Rate limit no sorteio (até 20 chamadas à NASA por pedido) e no intervalo; se o banco cair, essas rotas seguem funcionando (fail-open) e o disjuntor segura o custo |
+| Corpo gigante | Pedidos acima de 16 KB recebem 413 antes do parse |
+| Exposição de dados | `/docs`, `/redoc` e `/openapi.json` desligados em produção; chaves como parâmetros `NoEcho`; erros dos provedores só no log |
+
+**Se o disjuntor desligar a API** (o e-mail de alerta avisa), confira o tráfego no CloudWatch e religue:
+
+```bash
+aws lambda delete-function-concurrency --function-name <output FunctionName do stack>
+```
+
+**Limites conhecidos**
+- A Function URL é pública: um ataque distribuído ainda consome a capacidade do DynamoDB (curtidas e chat ficam indisponíveis por um tempo, sem custo) até o disjuntor agir.
+- Um ataque muito grande ao CloudFront pode passar da cota grátis (10 milhões de requisições/mês). O budget avisa; o plano de preço fixo gratuito do CloudFront, se disponível na conta, elimina cobrança excedente.
+- Os 7 alertas moderados do `npm audit` são de ferramentas de build (ESLint) e não vão para o site.
 
 ## Contribuindo
 

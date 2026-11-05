@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from datetime import date
 from app.models.nasa.apod import ApodResponse, ApodItem
+from app.config.rate_limit import APOD_LIST_RULES, APOD_RANDOM_RULES
 from app.exceptions import ContractApiError
 from app.services.nasa import (
     get_general_apod_response,
@@ -9,6 +10,7 @@ from app.services.nasa import (
     get_apod_range,
     get_random_apods,
 )
+from app.services.rate_limit.rate_limit import rate_limit
 
 
 APOD_FIRST_DAY = date(1995, 6, 16)
@@ -16,7 +18,8 @@ MAX_RANGE_DAYS = 31
 
 router = APIRouter(prefix="/apod", tags=["APOD"])
 
-@router.get("", response_model=list[ApodResponse])
+# Rotas que multiplicam chamadas à NASA têm rate limit; data e hoje usam cache e o limite global de custo
+@router.get("", response_model=list[ApodResponse], dependencies=[Depends(rate_limit(*APOD_LIST_RULES))])
 def general_apod(page: int = Query(1, ge=1), per_page: int = Query(10, ge=1, le=50)):
     return get_general_apod_response(page, per_page)
 
@@ -33,7 +36,7 @@ def apod_by_date(day: date):
     return get_apod_by_date(day)
 
 
-@router.get("/range", response_model=list[ApodItem])
+@router.get("/range", response_model=list[ApodItem], dependencies=[Depends(rate_limit(*APOD_LIST_RULES))])
 def apod_range(start: date, end: date):
     if start > end:
         raise ContractApiError("A data inicial deve ser anterior à final.")
@@ -44,6 +47,6 @@ def apod_range(start: date, end: date):
     return get_apod_range(start, end)
 
 
-@router.get("/random", response_model=list[ApodItem])
+@router.get("/random", response_model=list[ApodItem], dependencies=[Depends(rate_limit(*APOD_RANDOM_RULES))])
 def random_apods(count: int = Query(8, ge=1, le=20)):
     return get_random_apods(count)

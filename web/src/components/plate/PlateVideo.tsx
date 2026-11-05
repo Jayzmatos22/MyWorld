@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { ApodVideo } from '@/api/types'
-import { resolveVideo, videoPoster } from '@/lib/media'
-import { PlayIcon } from '@/components/ui/icons'
+import { nasaPermalink, resolveVideo, videoPoster } from '@/lib/media'
+import { ArrowIcon, PlayIcon } from '@/components/ui/icons'
 import { PlateImage } from './PlateImage'
 
 interface PlateVideoProps {
@@ -33,6 +33,24 @@ export function PlateVideo({ apod, transitionName }: PlateVideoProps) {
     )
   }
 
+  if (source.kind === 'link') {
+    return (
+      <div className="relative grid aspect-video w-full place-items-center overflow-hidden bg-night">
+        {poster ? (
+          <PlateImage src={poster} alt="" fit="cover" priority transitionName={transitionName} className="absolute inset-0 opacity-40" />
+        ) : null}
+        <a
+          href={source.href ?? nasaPermalink(apod.date)}
+          target="_blank"
+          rel="noreferrer"
+          className="label-mono relative inline-flex items-center gap-2 bg-void/70 px-4 py-3 text-amber underline-offset-4 hover:underline"
+        >
+          Assistir na fonte <ArrowIcon direction="up-right" />
+        </a>
+      </div>
+    )
+  }
+
   if (playing) {
     return (
       <div className="relative aspect-video w-full bg-night">
@@ -40,7 +58,8 @@ export function PlateVideo({ apod, transitionName }: PlateVideoProps) {
           src={source.embed}
           title={`Vídeo: ${apod.title}`}
           allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-          allowFullScreen
+          referrerPolicy="strict-origin-when-cross-origin"
+          sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
           className="absolute inset-0 size-full"
         />
       </div>

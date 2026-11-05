@@ -1,5 +1,5 @@
 import type { Apod } from '@/api/types'
-import { nasaPermalink } from '@/lib/media'
+import { nasaPermalink, safeHttpUrl } from '@/lib/media'
 import { ArrowIcon } from '@/components/ui/icons'
 import { PlateImage } from './PlateImage'
 import { PlateVideo } from './PlateVideo'
@@ -26,7 +26,7 @@ export function PlateMedia({ apod, transitionName, priority = true }: PlateMedia
             <p className="label-mono text-ink-muted">Conteúdo interativo</p>
             <p className="mt-3 font-display text-title">Esta placa só pode ser vista no arquivo da NASA.</p>
             <a
-              href={apod.url ?? nasaPermalink(apod.date)}
+              href={safeHttpUrl(apod.url) ?? nasaPermalink(apod.date)}
               target="_blank"
               rel="noreferrer"
               className="label-mono mt-6 inline-flex items-center gap-2 text-amber underline-offset-4 hover:underline"

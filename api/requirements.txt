@@ -1,7 +1,9 @@
-fastapi==0.128.3
+fastapi==0.162.0
+# Fixada à parte: o FastAPI aceita starlette>=0.46, e as anteriores à 1.3.1 têm alertas de segurança
+starlette==1.10.0
 mangum==0.22.0
 pydantic-settings==2.16.0
-requests==2.32.5
+requests==2.34.2
 cachetools==7.2.4
 beautifulsoup4==4.15.0
 openai==3.42.0
