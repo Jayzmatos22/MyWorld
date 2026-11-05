@@ -14,7 +14,9 @@ export function AppShell() {
         Pular para o conteúdo
       </a>
       <Masthead />
-      <main id="conteudo" tabIndex={-1} className="relative outline-none">
+      {/* overflow-x-clip: mídia que sangra até a borda (e as marcas de corte em volta dela)
+          não pode gerar rolagem horizontal no desktop, onde a barra de rolagem ocupa espaço */}
+      <main id="conteudo" tabIndex={-1} className="relative overflow-x-clip outline-none">
         <Outlet />
       </main>
       <Footer />
