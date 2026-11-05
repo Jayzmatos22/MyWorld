@@ -10,10 +10,11 @@ import { DateJump } from "./DateJump";
 import { Orbit  } from 'lucide-react';
 
 const NAV = [
-  { to: "/", label: "Hoje", end: true },
+  { to: "/hoje", label: "Hoje", end: false },
   { to: "/galeria", label: "Galeria", end: false },
   { to: "/acaso", label: "Acaso", end: false },
   { to: "/favoritos", label: "Favoritos", end: false },
+  { to: "/sobre", label: "Sobre", end: false },
 ] as const;
 
 export function Masthead() {

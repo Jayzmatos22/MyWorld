@@ -4,13 +4,21 @@
 
 **Um arquivo editorial do céu: a Astronomy Picture of the Day da NASA, desde 1995, com um assistente de IA para perguntar sobre o que você está vendo.**
 
+**[Ver o site no ar →](https://d3qm8fzq1hw1xt.cloudfront.net/)**
+
 ![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.128-009688?logo=fastapi&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.162-009688?logo=fastapi&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)
+![React Router](https://img.shields.io/badge/React_Router-7-CA4245?logo=reactrouter&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
-![AWS Lambda](https://img.shields.io/badge/AWS_Lambda-SAM-FF9900?logo=awslambda&logoColor=white)
-![Amazon DynamoDB](https://img.shields.io/badge/Amazon_DynamoDB-free_tier-4053D6?logo=amazondynamodb&logoColor=white)
+![WebGL](https://img.shields.io/badge/WebGL-shader-990000?logo=webgl&logoColor=white)
+<br>
+![AWS Lambda](https://img.shields.io/badge/AWS_Lambda-SAM-FF9900?logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2ZmZiI%2BPHBhdGggZD0iTTUgMjEgMTAuNiA5LjYgOC45IDZDOC42IDUuMyA4LjEgNSA3LjQgNUg2VjNoMS42QzkgMyA5LjkgMy42IDEwLjUgNC45TDE3IDE4LjZjLjMuNi43LjkgMS40LjloLjZ2MmgtMWMtMS40IDAtMi4zLS42LTIuOS0xLjlsLTMuMy03LjJMNy40IDIxeiIvPjwvc3ZnPg%3D%3D)
+![Amazon DynamoDB](https://img.shields.io/badge/Amazon_DynamoDB-free_tier-4053D6?logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2ZmZiI%2BPGVsbGlwc2UgY3g9IjEyIiBjeT0iNSIgcng9IjgiIHJ5PSIzIi8%2BPHBhdGggZD0iTTQgOC41djNjMCAxLjcgMy42IDMgOCAzczgtMS4zIDgtM3YtM2MtMS44IDEuMy00LjggMi04IDJzLTYuMi0uNy04LTJ6Ii8%2BPHBhdGggZD0iTTQgMTV2NGMwIDEuNyAzLjYgMyA4IDNzOC0xLjMgOC0zdi00Yy0xLjggMS4zLTQuOCAyLTggMnMtNi4yLS43LTgtMnoiLz48L3N2Zz4%3D)
+![Amazon S3](https://img.shields.io/badge/Amazon_S3-site-569A31?logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2ZmZiI%2BPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNNCA1YzAtMS43IDMuNi0zIDgtM3M4IDEuMyA4IDNsLTIgMTQuNWMtLjIgMS41LTIuOSAyLjUtNiAyLjVzLTUuOC0xLTYtMi41em0yLjEuMWMuNC43IDIuNyAxLjkgNS45IDEuOXM1LjUtMS4yIDUuOS0xLjljLS40LS43LTIuNy0xLjktNS45LTEuOVM2LjUgNC40IDYuMSA1LjF6Ii8%2BPC9zdmc%2B)
+![Amazon CloudFront](https://img.shields.io/badge/Amazon_CloudFront-CDN-8C4FFF?logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2ZmZiI%2BPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMTIgMmExMCAxMCAwIDEgMCAwIDIwIDEwIDEwIDAgMCAwIDAtMjB6bS0xIDIuMVY4SDcuM0E4IDggMCAwIDEgMTEgNC4xem0yIDBBOCA4IDAgMCAxIDE2LjcgOEgxM3pNNS4zIDEwSDExdjRINS4zYTggOCAwIDAgMSAwLTR6TTEzIDEwaDUuN2E4IDggMCAwIDEgMCA0SDEzem0tNS43IDZIMTF2My45QTggOCAwIDAgMSA3LjMgMTZ6bTUuNyAwaDMuN2E4IDggMCAwIDEtMy43IDMuOXoiLz48L3N2Zz4%3D)
 
 </div>
 
@@ -37,9 +45,28 @@
 O **MyWorld** apresenta cada APOD como uma "placa" de um arquivo astronômico. Cada placa traz uma composição editorial, a mídia em destaque (imagem ou vídeo), a explicação original e os metadados da observação. O projeto tem duas partes:
 
 - **Back-end em FastAPI.** Busca e normaliza os dados do APOD no `science.nasa.gov`, com cache e tratamento de erros, serve de ponte para três provedores de LLM compatíveis com a API da OpenAI e guarda as curtidas no **Amazon DynamoDB**.
-- **Front-end em React 19.** Uma SPA com TypeScript estrito, um céu animado (nebulosa em CSS e campo de estrelas em canvas) e navegação por data, intervalo, sorteio e pelo ranking das placas mais curtidas.
+- **Front-end em React 19.** Uma SPA com TypeScript estrito, um céu animado (nebulosa em CSS e campo de estrelas em canvas) e navegação por data, intervalo, sorteio e pelo ranking das placas mais curtidas. A entrada do site é a página **Sobre**, com um buraco negro animado em **WebGL**.
+
+Tudo roda na AWS, sem servidor fixo e dentro do nível gratuito: Lambda para a API e S3 + CloudFront para o site.
 
 ## Funcionalidades
+
+**Páginas**
+
+| Rota | Conteúdo |
+|---|---|
+| `/` | Entrada: leva direto ao Sobre |
+| `/sobre` | Apresentação, metodologia, fonte e autoria, com o buraco negro animado |
+| `/hoje` | Placa do dia e as seis noites anteriores |
+| `/placa/:data` | Uma placa (← → navegam entre dias), com curtida e "Pergunte à placa" |
+| `/galeria?de=&ate=` | Intervalo de até 31 dias, lado a lado |
+| `/acaso` | Placas sorteadas de todo o acervo |
+| `/favoritos` | Ranking das placas mais curtidas |
+
+**Página Sobre**
+- Abertura no estilo landing page: selo, título em duas linhas revelado por máscara e animação de entrada de cerca de 1,7 s, que espera a fonte carregar
+- Buraco negro em WebGL: os anéis giram e o disco corre, enquanto o centro fica parado; as estrelas animadas do site aparecem nas partes escuras da foto
+- Seções de projeto, metodologia (da coleta à infraestrutura), fonte e autoria
 
 **Arquivo APOD**
 - Placa do dia, com as seis noites anteriores
@@ -69,20 +96,22 @@ O **MyWorld** apresenta cada APOD como uma "placa" de um arquivo astronômico. C
 ## Arquitetura
 
 ```
-┌──────────────────────┐        ┌───────────────────────────────┐        ┌───────────────────────────┐
-│  React SPA (Vite)    │  /api  │  FastAPI                      │        │  science.nasa.gov         │
-│  web/                │ ─────▶ │  local: uvicorn               │ ─────▶ │  /wp-json/wp/v2/apod-basic│
-│                      │        │  produção: AWS Lambda + Mangum│        └───────────────────────────┘
-│  proxy /api → :8000  │        │                               │        ┌───────────────────────────┐
-│  (só em dev)         │        │  routers → services → clients │ ─────▶ │  NVIDIA · Groq · Google   │
-└──────────────────────┘        │                               │        │  (API compatível OpenAI)  │
-                                │                               │        └───────────────────────────┘
-                                │                               │        ┌───────────────────────────┐
-                                │                               │ ─────▶ │  Amazon DynamoDB          │
-                                └───────────────────────────────┘        │  curtidas + rate limit    │
-                                                                          │  (local: DynamoDB Local)  │
-                                                                          └───────────────────────────┘
+Navegador (React SPA)
+│
+├─ site ──▶ CloudFront · HTTPS, CSP, cache ──▶ S3 privado (build do web/)
+│
+└─ API ───▶ Lambda Function URL · FastAPI + Mangum (api/)
+              │  routers → services → clients
+              ├──▶ science.nasa.gov ........... APOD (cache em memória)
+              ├──▶ NVIDIA · Groq · Google ..... "Pergunte à placa"
+              └──▶ Amazon DynamoDB ............ curtidas, ranking e rate limit
+
+CloudWatch (alarme de invocações) ──▶ SNS ──▶ disjuntor: concorrência da API = 0
+
+Em desenvolvimento: Vite :5173 (proxy /api) ──▶ uvicorn :8000 ──▶ DynamoDB Local :8002
 ```
+
+O navegador chama a API **direto** pela Function URL, e não por dentro do CloudFront: assim o rate limit enxerga o IP real de cada visitante.
 
 O back-end segue camadas com responsabilidades separadas:
 
@@ -98,16 +127,16 @@ O back-end segue camadas com responsabilidades separadas:
 
 | Área | Tecnologias |
 |---|---|
-| **Back-end** | Python 3.13, FastAPI, Pydantic v2, pydantic-settings, Requests, cachetools, BeautifulSoup, SDK `openai`, boto3 |
-| **Front-end** | React 19, TypeScript 5.9 (strict), React Router 7, Tailwind CSS 4, Vite 7, Lucide |
-| **Infraestrutura** | AWS Lambda (Python 3.13) via AWS SAM, Lambda Function URL, Mangum, Amazon DynamoDB, CloudWatch Logs |
+| **Back-end** | Python 3.13, FastAPI 0.162, Pydantic v2, pydantic-settings, Requests, cachetools, BeautifulSoup, SDK `openai`, boto3 |
+| **Front-end** | React 19, TypeScript 5.9 (strict), React Router 7, Tailwind CSS 4, Vite 7, Lucide, WebGL (shader próprio), Canvas 2D |
+| **Infraestrutura** | AWS SAM, AWS Lambda (Python 3.13) com Function URL e Mangum, Amazon DynamoDB, Amazon S3, Amazon CloudFront, CloudWatch (logs e alarmes), SNS, AWS Budgets |
 | **Desenvolvimento** | DynamoDB Local (Docker) |
 
 ## Estrutura do repositório
 
 ```
 MyWorld/
-├── template.yaml               # Infraestrutura: API, DynamoDB, S3 e CloudFront (AWS SAM)
+├── template.yaml               # Infraestrutura: API, DynamoDB, S3, CloudFront e alertas (AWS SAM)
 ├── deploy.ps1                  # Deploy completo: API + front
 ├── .env                        # Só local (não versionado): chaves e DynamoDB Local
 ├── api/                        # Back-end: é só esta pasta que vai para o Lambda
@@ -146,6 +175,12 @@ MyWorld/
 │           ├── likes/likes_service.py # Curtir, contar e ranking
 │           └── rate_limit/rate_limit.py # Janela fixa no DynamoDB, IP anonimizado
 └── web/                        # Front-end (detalhes em web/README.md)
+    └── src/
+        ├── pages/              # Sobre, Hoje, Detalhes, Galeria, Acaso, Favoritos
+        ├── components/about/   # Abertura do Sobre: foto + movimento
+        ├── lib/blackHoleFlow.ts # Animação WebGL do buraco negro
+        ├── lib/starfield.ts    # Campo de estrelas (Canvas 2D)
+        └── assets/about/       # Foto do Sobre em 4 larguras (19 a 165 KB)
 ```
 
 ## Como rodar localmente
@@ -203,7 +238,7 @@ npm install
 npm run dev
 ```
 
-O front sobe em `http://localhost:5173`. Em desenvolvimento, o Vite encaminha `/api/*` para `http://127.0.0.1:8000`, sem precisar de CORS.
+O front sobe em `http://localhost:5173` e abre no Sobre; a placa do dia fica em `/hoje`. Em desenvolvimento, o Vite encaminha `/api/*` para `http://127.0.0.1:8000`, sem precisar de CORS.
 
 | Script | Ação |
 |---|---|
@@ -221,6 +256,7 @@ O front sobe em `http://localhost:5173`. Em desenvolvimento, o Vite encaminha `/
 | Mudei o `.env` e nada mudou | O `--reload` só observa o código. Pare o uvicorn (Ctrl+C) e suba de novo |
 | A API parece ignorar o código novo | Pode haver outro uvicorn antigo na porta 8000. No Windows: `netstat -ano \| findstr :8000` e `taskkill /PID <pid> /T /F` |
 | `python-dotenv could not parse statement` | Comentários no `.env` usam `#`, não `'''` |
+| O buraco negro do Sobre não se mexe | Sem WebGL ou com "reduzir movimento" ligado no sistema, a página mostra a foto estática de propósito |
 
 ## Variáveis de ambiente
 
@@ -234,10 +270,11 @@ O front sobe em `http://localhost:5173`. Em desenvolvimento, o Vite encaminha `/
 | `STANDARD_NVIDIA_MODEL` | Não | `openai/gpt-oss-20b` | Modelo padrão da NVIDIA |
 | `GROQ_STANDARD_MODEL` | Não | `openai/gpt-oss-20b` | Modelo padrão do Groq |
 | `GOOGLE_STANDARD_MODEL` | Não | `gemini-3.5-flash` | Modelo padrão do Google |
-| `CORS_ORIGINS` | Em produção | `["http://localhost:5173"]` | Origens liberadas, em formato JSON |
+| `CORS_ORIGINS` | Em produção | `["http://localhost:5173"]` | Origens liberadas, em formato JSON (no Lambda, o template preenche com o CloudFront) |
 | `TABLE_NAME` | Não | `myworld-local` | Tabela do DynamoDB (no Lambda, o template injeta) |
 | `DYNAMODB_ENDPOINT` | Só local | — | Endpoint do DynamoDB Local |
 | `RATE_LIMIT_SECRET` | Em produção | chave aleatória por processo | Chave do HMAC que anonimiza os IPs no rate limit |
+| `ENABLE_DOCS` | Não | `true` | `/docs`, `/redoc` e `/openapi.json`; o template define `false` em produção |
 
 O arquivo APOD **não precisa de chave**: o `science.nasa.gov` é público. As chaves de IA são lidas como `SecretStr` e nunca aparecem em logs nem em respostas da API.
 
@@ -245,13 +282,13 @@ O arquivo APOD **não precisa de chave**: o `science.nasa.gov` é público. As c
 
 | Variável | Padrão | Descrição |
 |---|---|---|
-| `VITE_API_URL` | `/api` | URL base da API. Em produção, aponte para a URL do Lambda. |
+| `VITE_API_URL` | `/api` | URL base da API. Em produção, o `deploy.ps1` preenche com a Function URL. |
 
 > **Nunca versione o `.env`.** Ele já está no `.gitignore`. Use o `web/.env.example` como modelo.
 
 ## Referência da API
 
-A documentação interativa completa fica em `/docs` (Swagger) e `/redoc`.
+A documentação interativa completa fica em `/docs` (Swagger) e `/redoc`, só em desenvolvimento: em produção, o `ENABLE_DOCS=false` desliga as duas.
 
 ### APOD
 
@@ -308,7 +345,7 @@ curl -X POST http://127.0.0.1:8000/llm/chat \
 
 ### Curtidas
 
-Curtida repetível, como views: qualquer visitante pode curtir quantas vezes quiser, limitado a 30 por minuto por IP. A página de favoritos mostra o ranking.
+Curtida repetível, como views: qualquer visitante pode curtir quantas vezes quiser, limitado a 30 por minuto e 500 por dia por IP. A página de favoritos mostra o ranking.
 
 | Método | Rota | Descrição |
 |---|---|---|
@@ -332,7 +369,8 @@ Os erros do domínio seguem um envelope único, que o front trata de forma tipad
 |---|---|---|
 | `400` | `bad_request` | Parâmetro fora das regras ou com tipo/formato errado (data, intervalo, modelo, pergunta) |
 | `404` | `not_found` | Não existe APOD para a data pedida, ou rota inexistente |
-| `429` | `rate_limited` | Limite da NASA, do provedor de IA ou da própria API (curtidas, chat). Inclui `Retry-After` quando disponível. |
+| `413` | `bad_request` | Corpo do pedido acima de 16 KB |
+| `429` | `rate_limited` | Limite da NASA, do provedor de IA ou da própria API (curtidas, chat, sorteio, intervalo). Inclui `Retry-After` quando disponível. |
 | `503` | `unavailable` | NASA, provedor de IA ou banco indisponível, lento ou com resposta inválida |
 
 ## Decisões técnicas
@@ -344,8 +382,18 @@ Os erros do domínio seguem um envelope único, que o front trata de forma tipad
 - **Sorteio sem viés.** Com `per_page=1`, cada página da `apod-basic` é um APOD. O sorteio escolhe páginas distintas em todo o acervo e busca todas em paralelo, com até 8 threads.
 - **Timeouts explícitos** (5 s de conexão, 25 s de leitura) e mapeamento de cada falha da NASA para uma exceção do domínio.
 - **Rate limit no DynamoDB, sem guardar IP.** Contador por janela fixa, atualizado com uma única escrita condicional. O IP vira um HMAC com chave secreta e o registro expira por TTL. O IP vem do `requestContext` da Function URL; o `X-Forwarded-For` é ignorado, porque o cliente pode escrever qualquer coisa nele.
-- **DynamoDB provisionado dentro do free tier.** 5 RCU/5 WCU na tabela e no índice. Se passar disso, a tabela recusa a requisição (503) em vez de cobrar.
+- **DynamoDB provisionado dentro do free tier.** 10 RCU/10 WCU na tabela e 5/5 no índice (15 de 25 grátis). Se passar disso, a tabela recusa a requisição (503) em vez de cobrar.
 - **Provedores de IA como dados.** Os três provedores usam o mesmo SDK `openai`, mudando só `base_url` e chave. Adicionar um provedor é uma entrada nova em `config/llm.py`.
+- **Entrada pelo Sobre.** A raiz `/` redireciona para `/sobre` com `replace`, para o "voltar" do navegador não cair de novo no redirecionamento. A placa do dia fica em `/hoje`.
+- **Buraco negro animado com "flow map" em WebGL.** A foto é estática; um shader a relê a cada quadro com um pequeno deslocamento:
+  - **Anéis:** giram por ângulo em volta do centro. A geometria foi medida na própria foto: um círculo ajustado à borda da sombra, com erro mediano de 1,3 px.
+  - **Disco:** corre ao longo da faixa.
+  - **Só o gás claro se move:** o shader lê o brilho de cada ponto, então a sombra e o fundo ficam parados.
+  - **Loop sem emenda:** duas leituras defasadas se alternam num ciclo de 11 s.
+  - **Leveza:** 30 quadros por segundo, resolução de até 1,5× e pausa fora da tela. Sem WebGL ou com "reduzir movimento", fica a foto estática.
+- **Foto otimizada.** O original (7000×4000, 7,5 MB) vira quatro larguras em WebP, de 19 a 165 KB, servidas com `srcset`. No celular, a página baixa 45 KB.
+- **Foto misturada ao céu do site.** Com `mix-blend-mode: lighten`, as estrelas animadas aparecem nas partes escuras da foto. Duas máscaras fazem a foto nascer do escuro e apagam o anel atrás do texto.
+- **Abertura que espera a fonte.** A animação de entrada do Sobre só começa quando a fonte carrega, para a revelação por máscara nunca mostrar a fonte de reserva. Depois que termina, nenhuma animação nem `will-change` continua ativo.
 
 ## Deploy
 
@@ -354,8 +402,9 @@ Tudo fica num único stack do **AWS SAM** (`template.yaml`):
 | Parte | Recursos | Custo |
 |---|---|---|
 | API | Lambda (`api/`, Python 3.13) + Function URL + Mangum | Free tier permanente: 1 milhão de requisições/mês |
-| Banco | DynamoDB provisionado 5/5 + índice 5/5 | Free tier permanente: 25 RCU/25 WCU |
-| Front | S3 privado + CloudFront (Origin Access Control, HTTPS, headers de segurança) | Free tier permanente do CloudFront: 1 TB e 10 milhões de requisições/mês; S3: frações de centavo |
+| Banco | DynamoDB provisionado 10/10 + índice 5/5 | Free tier permanente: 25 RCU/25 WCU |
+| Front | S3 privado + CloudFront (Origin Access Control, HTTPS, CSP e headers de segurança) | Free tier permanente do CloudFront: 1 TB e 10 milhões de requisições/mês; S3: frações de centavo |
+| Alertas | Alarme do CloudWatch + SNS + disjuntor; AWS Budgets (com `ALERT_EMAIL`) | Free tier: 10 alarmes, 1.000 e-mails e 2 orçamentos |
 | Logs | CloudWatch, retenção de 7 dias | Free tier: 5 GB/mês |
 
 Sem domínio próprio, o site fica em `https://xxxx.cloudfront.net` e o custo é zero dentro dessas cotas.
@@ -381,7 +430,7 @@ O script:
 3. Faz o build do front com `VITE_API_URL` = Function URL.
 4. Envia para o S3 (assets com hash: cache de 1 ano; `index.html`: `no-cache`) e invalida o `index.html` no CloudFront.
 
-O `CORS_ORIGINS` do Lambda é preenchido pelo próprio template com o endereço do CloudFront.
+O `CORS_ORIGINS` do Lambda é preenchido pelo próprio template com o endereço do CloudFront. O deploy usa o código **local**: faça o deploy a partir da `main` atualizada (`git checkout main && git pull`).
 
 **Decisões**
 - O front chama a Function URL **direto**, não por dentro do CloudFront. Pelo CloudFront, a API veria o IP do CloudFront, e o rate limit por cliente deixaria de funcionar.
@@ -389,7 +438,7 @@ O `CORS_ORIGINS` do Lambda é preenchido pelo próprio template com o endereço 
 - As chaves de IA viram variáveis de ambiente do Lambda, criptografadas em repouso. O Secrets Manager custaria cerca de US$ 0,40 por chave por mês.
 
 **Checklist**
-- Crie um AWS Budget de US$ 1 com alerta por e-mail como rede de segurança.
+- Defina `ALERT_EMAIL` no `.env`: o template cria o orçamento de US$ 2/mês e liga os alertas do disjuntor. Confirme a inscrição no e-mail que a AWS enviar.
 - A tabela do DynamoDB tem `DeletionPolicy: Retain`: apagar o stack não apaga as curtidas.
 - Guarde o `RATE_LIMIT_SECRET`: trocar a chave só zera os contadores de rate limit em andamento.
 - Contas criadas depois de jul/2025 começam no plano gratuito de 6 meses. Confira em aws.amazon.com/free o que acontece depois dele.
@@ -428,5 +477,7 @@ aws lambda delete-function-concurrency --function-name <output FunctionName do s
 
 ## Créditos
 
-- Imagens, vídeos e textos: **[Astronomy Picture of the Day](https://apod.nasa.gov/)**, da NASA. Os direitos de cada imagem pertencem aos autores indicados no campo `copyright`.
-- Este é um projeto independente, sem afiliação ou endosso da NASA.
+- Imagens, vídeos e textos das placas: **[Astronomy Picture of the Day](https://apod.nasa.gov/)**, da NASA. Os direitos de cada imagem pertencem aos autores indicados no campo `copyright`.
+- Imagem de fundo da página Sobre: renderização de buraco negro. Autor e licença: _a preencher_.
+- Ícones dos badges da AWS: símbolos simples desenhados para este README (as marcas da AWS não estão disponíveis no shields.io).
+- Projeto de Jailton Santos ([@Jayzmatos22](https://github.com/Jayzmatos22)), independente, sem afiliação ou endosso da NASA.

@@ -9,7 +9,7 @@ export function NotFoundPage() {
         variant="error"
         code="404 · Fora do mapa estelar"
         title="Esta região do céu não foi catalogada."
-        actions={<ButtonLink to="/">Voltar para hoje</ButtonLink>}
+        actions={<ButtonLink to="/hoje">Voltar para hoje</ButtonLink>}
       >
         O endereço não corresponde a nenhuma página do arquivo.
       </StatusPanel>

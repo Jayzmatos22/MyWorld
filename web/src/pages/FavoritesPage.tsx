@@ -50,7 +50,7 @@ export function FavoritesPage() {
           title="Nenhuma placa curtida ainda."
           actions={
             <>
-              <ButtonLink to="/">Placa de hoje</ButtonLink>
+              <ButtonLink to="/hoje">Placa de hoje</ButtonLink>
               <ButtonLink to="/acaso">Sortear placas</ButtonLink>
             </>
           }
