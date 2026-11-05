@@ -49,6 +49,7 @@
   border-radius: 50%;
   transform: translate3d(var(--drift-x), var(--drift-y), 0) rotate(var(--drift-r)) scale(var(--drift-s));
   will-change: transform;
+  transition: opacity var(--duration-glacial) var(--ease-out-quart);
   animation:
     drift-x var(--dx, 97s) var(--ease-in-out-quint) infinite alternate,
     drift-y var(--dy, 131s) var(--ease-in-out-quint) infinite alternate,
@@ -87,6 +88,12 @@
   --dx: 139s;
   --dy: 107s;
   --ds: 71s;
+}
+
+/* Céu fundo (página Sobre): a nebulosa quase some e as estrelas ganham contraste.
+   Só opacity muda, então a troca entre páginas é só composição. */
+.nebula--deep .nebula__cloud {
+  opacity: 0.22;
 }
 
 /* Vinheta + grão estático: escondem o banding dos gradientes escuros */

@@ -1,0 +1,409 @@
+/*
+ * Página Sobre.
+ *
+ * O hero segue a estrutura do prompt "Orbit": --u equivale a 1 px de uma tela de
+ * referência 1563×1006 e todo tamanho do hero é N × --u, então a composição escala
+ * como um bloco rígido. Tipografia, cores e cabeçalho são os do MyWorld.
+ * O céu é o do site com a nebulosa apagada (Sky em modo deep) e um
+ * buraco negro (foto + movimento em WebGL) acende a metade de baixo: brilho contra escuro.
+ */
+
+.about-hero {
+  --u: max(min(calc(100vw / 1563), calc(100svh / 460)), 0.8px);
+  --e-reveal: cubic-bezier(0.18, 0.85, 0.26, 1);
+  --e-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --rise-lg: calc(13 * var(--u));
+  /* Espaço reservado abaixo do texto para o disco do buraco negro aparecer */
+  --art-space: clamp(9rem, 28svh, 20rem);
+
+  /* Sem isolation: o "lighten" da foto precisa misturar com o campo de estrelas do site */
+  position: relative;
+  overflow: clip;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: max(calc(620 * var(--u)), calc(100svh - 8.5rem));
+  /* O padding de baixo reserva o disco + uma folga: o texto nunca encosta no brilho */
+  padding: max(calc(92 * var(--u)), 3rem) var(--spacing-gutter) calc(var(--art-space) + max(calc(56 * var(--u)), 2.5rem));
+  text-align: center;
+}
+
+@media (width <= 1023px) {
+  .about-hero {
+    --u: calc(100vw / 900);
+  }
+}
+
+@media (width <= 640px) {
+  .about-hero {
+    --u: calc(100vw / 486);
+  }
+}
+
+@media (width <= 380px) {
+  .about-hero {
+    --u: calc(100vw / 470);
+  }
+}
+
+@media (width <= 1023px) and (height <= 520px) {
+  .about-hero {
+    --u: min(calc(100vw / 900), calc(100vh / 470));
+  }
+}
+
+.about-hero__copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Selo ─────────────────────────────────────────────────── */
+.about-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(7 * var(--u));
+  height: calc(26 * var(--u));
+  min-height: 1.5rem;
+  padding: 0 calc(10 * var(--u)) 0 calc(4 * var(--u));
+  border: max(calc(1 * var(--u)), 1px) solid rgb(255 255 255 / 0.14);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.07);
+  backdrop-filter: blur(calc(10 * var(--u)));
+  -webkit-backdrop-filter: blur(calc(10 * var(--u)));
+  color: rgb(230 232 240 / 0.88);
+  font-size: max(calc(13 * var(--u)), 0.75rem);
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.about-pill:hover {
+  background: rgb(255 255 255 / 0.12);
+  border-color: color-mix(in oklab, var(--color-amber) 55%, transparent);
+}
+
+.about-pill__chip {
+  display: inline-flex;
+  align-items: center;
+  height: calc(18 * var(--u));
+  min-height: 1rem;
+  padding: 0 calc(8 * var(--u));
+  border-radius: 999px;
+  background: var(--color-amber);
+  color: var(--color-void);
+  font-family: var(--font-mono);
+  font-size: max(calc(9.5 * var(--u)), 0.5625rem);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.about-pill__arrow {
+  width: calc(9.5 * var(--u));
+  height: calc(8 * var(--u));
+  min-width: 0.5rem;
+  color: rgb(255 255 255 / 0.95);
+  transition: translate 0.18s ease;
+}
+
+.about-pill:hover .about-pill__arrow {
+  translate: calc(3 * var(--u)) 0;
+}
+
+/* ── Título: cada linha sobe de dentro de uma máscara ───────── */
+.about-title {
+  margin: calc(20 * var(--u)) 0 0;
+  font-family: var(--font-display);
+  font-size: calc(72 * var(--u));
+  font-weight: 340;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  color: var(--color-ink);
+}
+
+.about-line {
+  display: block;
+  overflow: hidden;
+  /* Folga para os descendentes (ç, g, p) sem mudar o layout */
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+
+.about-line > span {
+  display: block;
+}
+
+.about-line--soft > span {
+  font-style: italic;
+  color: var(--color-ink-muted);
+}
+
+.about-sub {
+  max-width: calc(640 * var(--u));
+  margin: calc(16 * var(--u)) 0 0;
+  font-size: max(calc(19 * var(--u)), 1rem);
+  line-height: 1.4;
+  color: rgb(230 232 240 / 0.55);
+}
+
+/* ── Botões ───────────────────────────────────────────────── */
+.about-cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: calc(10 * var(--u));
+  margin-top: calc(30 * var(--u));
+}
+
+.about-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(42 * var(--u));
+  min-height: 2.5rem;
+  padding-inline: calc(22 * var(--u));
+  border: 1px solid transparent;
+  font-family: var(--font-mono);
+  font-size: max(calc(11.5 * var(--u)), 0.6875rem);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.about-btn--ghost {
+  border-color: rgb(230 232 240 / 0.5);
+  color: var(--color-ink);
+}
+
+.about-btn--ghost:hover {
+  border-color: var(--color-ink);
+  background: rgb(255 255 255 / 0.08);
+}
+
+.about-btn--solid {
+  background: var(--color-ink);
+  color: var(--color-void);
+}
+
+.about-btn--solid:hover {
+  background: var(--color-amber);
+}
+
+@media (width <= 640px) {
+  .about-title {
+    font-size: calc(46 * var(--u));
+  }
+
+  .about-sub {
+    max-width: min(calc(560 * var(--u)), 88vw);
+  }
+}
+
+/* ── Foto do buraco negro ─────────────────────────────────── */
+.about-photo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  mix-blend-mode: lighten;
+  /*
+   * Duas máscaras somadas (intersect): uma "sombra" elíptica atrás do bloco de texto,
+   * para a leitura não brigar com o anel, e um degradê vertical que faz a foto nascer
+   * do escuro sob o menu e se dissolver no fim do hero.
+   */
+  mask-image:
+    radial-gradient(ellipse 42% 30% at 50% 36%, rgb(0 0 0 / 0.16), rgb(0 0 0 / 0.5) 62%, #000),
+    linear-gradient(to bottom, transparent, rgb(0 0 0 / 0.6) 16%, #000 42%, #000 72%, transparent);
+  mask-composite: intersect;
+}
+
+.about-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 62% 42%;
+}
+
+/* Movimento (WebGL) por cima da foto: entra devagar depois do primeiro quadro */
+.about-photo__flow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 1.2s var(--ease-out-quart);
+}
+
+.about-photo__flow[data-ready] {
+  opacity: 1;
+}
+
+/*
+ * Sobre a foto, o texto precisa de mais contraste: tons mais claros e uma sombra escura difusa.
+ * No título é drop-shadow (no h1 inteiro): text-shadow seria cortado pelo overflow das linhas
+ * da máscara e viraria um retângulo escuro.
+ */
+.about-hero .about-title {
+  filter: drop-shadow(0 0 18px rgb(5 6 10 / 0.85));
+}
+
+.about-hero .about-sub {
+  text-shadow: 0 0 24px rgb(5 6 10 / 0.9);
+}
+
+.about-hero .about-line--soft > span {
+  color: rgb(200 205 222 / 0.92);
+}
+
+.about-hero .about-sub {
+  color: rgb(230 232 240 / 0.74);
+}
+
+/* Tela em pé: a foto escala pela altura e só um terço da largura aparece; puxa o anel para dentro */
+@media (orientation: portrait) {
+  .about-photo img {
+    object-position: 86% 46%;
+  }
+}
+
+/* ── Seções ───────────────────────────────────────────────── */
+/* Números e assinatura com um halo leve: brilho sobre o fundo escuro */
+.about-glow {
+  text-shadow: 0 0 36px rgb(243 217 166 / 0.16);
+}
+
+/* Horizonte que abre a autoria, eco do eclipse do topo */
+.about-horizon {
+  position: relative;
+  width: min(100% - 2 * var(--spacing-gutter), 72rem);
+  height: 1px;
+  margin-inline: auto;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(195 152 83 / 0.5) 30%,
+    rgb(255 244 222 / 0.95) 50%,
+    rgb(195 152 83 / 0.5) 70%,
+    transparent
+  );
+}
+
+.about-horizon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: min(70vw, 46rem);
+  height: 9rem;
+  translate: -50% -50%;
+  background: radial-gradient(closest-side, rgb(243 217 166 / 0.2), transparent);
+  pointer-events: none;
+}
+
+/* ── Movimento ────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  /* A foto surge sozinha ao abrir a página, sem esperar a fonte */
+  .about-photo {
+    animation: about-photo-in 2.4s var(--ease-out-expo) 0.1s both;
+  }
+
+  /* Quadro de abertura: tudo escondido até a fonte carregar */
+  .about-hero[data-intro] :is(.about-pill, .about-sub, .about-btn) {
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+
+  .about-hero[data-intro] .about-line > span {
+    transform: translate3d(0, 115%, 0);
+    will-change: transform;
+  }
+
+  /* Linha do tempo do prompt (termina em ~1,7 s) */
+  .about-hero[data-intro='play'] .about-pill {
+    animation: about-pill 0.62s var(--e-soft) 0.26s both;
+  }
+
+  .about-hero[data-intro='play'] .about-line:nth-child(1) > span {
+    animation: about-line 0.95s var(--e-reveal) 0.34s both;
+  }
+
+  .about-hero[data-intro='play'] .about-line:nth-child(2) > span {
+    animation: about-line 0.95s var(--e-reveal) 0.48s both;
+  }
+
+  .about-hero[data-intro='play'] .about-sub {
+    animation: about-rise 0.7s var(--e-soft) 0.86s both;
+  }
+
+  .about-hero[data-intro='play'] .about-btn:nth-child(1) {
+    animation: about-btn 0.62s var(--e-soft) 1s both;
+  }
+
+  .about-hero[data-intro='play'] .about-btn:nth-child(2) {
+    animation: about-btn 0.62s var(--e-soft) 1.07s both;
+  }
+}
+
+@keyframes about-pill {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--rise-lg), 0) scale(0.972);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes about-line {
+  from {
+    transform: translate3d(0, 115%, 0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes about-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--rise-lg), 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes about-btn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--rise-lg), 0) scale(0.986);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes about-photo-in {
+  from {
+    opacity: 0;
+    scale: 1.06;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}

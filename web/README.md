@@ -29,7 +29,7 @@ src/
     layout/     cabeçalho, rodapé, busca por data
     plate/      placa em destaque, mídia, folha de contato
     ui/         botões, estados (skeleton, erro, vazio), reveal
-  pages/        Hoje, Detalhes, Galeria, Acaso, Favoritos
+  pages/        Sobre, Hoje, Detalhes, Galeria, Acaso, Favoritos
   styles/       tokens (@theme), base, nebulosa, movimento
 ```
 
@@ -37,8 +37,10 @@ src/
 
 | Rota                | Conteúdo                              |
 | ------------------- | ------------------------------------- |
-| `/`                 | Placa do dia + seis noites anteriores |
+| `/`                 | Redireciona para `/sobre` (entrada)   |
+| `/sobre`            | Apresentação, metodologia e autoria   |
+| `/hoje`             | Placa do dia + seis noites anteriores |
 | `/placa/:data`      | Detalhes (← → navegam entre dias)     |
 | `/galeria?de=&ate=` | Intervalo de até 31 dias              |
 | `/acaso`            | 8 placas aleatórias                   |
-| `/favoritos`        | Favoritos salvos no navegador         |
+| `/favoritos`        | Ranking das placas mais curtidas      |

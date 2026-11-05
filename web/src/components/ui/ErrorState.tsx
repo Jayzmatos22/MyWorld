@@ -75,7 +75,7 @@ export function ErrorState({ error, onRetry, className }: { error: ApiError; onR
           {onRetry && error.kind !== 'not_found' && error.kind !== 'bad_request' ? (
             <Button onClick={onRetry}>Tentar de novo</Button>
           ) : null}
-          <ButtonLink to={error.kind === 'rate_limited' ? '/favoritos' : '/'}>
+          <ButtonLink to={error.kind === 'rate_limited' ? '/favoritos' : '/hoje'}>
             {error.kind === 'rate_limited' ? 'Ver favoritos' : 'Voltar para hoje'}
           </ButtonLink>
         </>
