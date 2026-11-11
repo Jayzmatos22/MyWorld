@@ -5,7 +5,7 @@
  * referência 1563×1006 e todo tamanho do hero é N × --u, então a composição escala
  * como um bloco rígido. Tipografia, cores e cabeçalho são os do MyWorld.
  * O céu é o do site com a nebulosa apagada (Sky em modo deep) e um
- * buraco negro (foto + movimento em WebGL) acende a metade de baixo: brilho contra escuro.
+ * buraco negro renderizado em WebGL 2 acende a metade de baixo: brilho contra escuro.
  */
 
 .about-hero {
@@ -16,7 +16,6 @@
   /* Espaço reservado abaixo do texto para o disco do buraco negro aparecer */
   --art-space: clamp(9rem, 28svh, 20rem);
 
-  /* Sem isolation: o "lighten" da foto precisa misturar com o campo de estrelas do site */
   position: relative;
   overflow: clip;
   display: flex;
@@ -209,48 +208,51 @@
   }
 }
 
-/* ── Foto do buraco negro ─────────────────────────────────── */
-.about-photo {
+/* ── Buraco negro (WebGL 2) ────────────────────────────────── */
+/* Sem blend-mode nem máscara: o shader já entrega alfa e dissolve as próprias bordas */
+.about-bh {
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  mix-blend-mode: lighten;
-  /*
-   * Duas máscaras somadas (intersect): uma "sombra" elíptica atrás do bloco de texto,
-   * para a leitura não brigar com o anel, e um degradê vertical que faz a foto nascer
-   * do escuro sob o menu e se dissolver no fim do hero.
-   */
-  mask-image:
-    radial-gradient(ellipse 42% 30% at 50% 36%, rgb(0 0 0 / 0.16), rgb(0 0 0 / 0.5) 62%, #000),
-    linear-gradient(to bottom, transparent, rgb(0 0 0 / 0.6) 16%, #000 42%, #000 72%, transparent);
-  mask-composite: intersect;
 }
 
-.about-photo img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 62% 42%;
-}
-
-/* Movimento (WebGL) por cima da foto: entra devagar depois do primeiro quadro */
-.about-photo__flow {
+.about-bh__canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   opacity: 0;
-  transition: opacity 1.2s var(--ease-out-quart);
+  transition: opacity 1.6s var(--ease-out-quart);
 }
 
-.about-photo__flow[data-ready] {
+.about-bh__canvas[data-ready] {
   opacity: 1;
 }
 
+/* Pôster: só existe sem WebGL 2. "screen" soma a luz dele ao céu do site */
+.about-bh__poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 77% 50%;
+  mix-blend-mode: screen;
+  mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 78%, transparent);
+}
+
+/* Sombra elíptica atrás do bloco de texto: a leitura não briga com o disco */
+.about-hero__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 40% 34% at 50% 36%, rgb(5 6 10 / 0.72), rgb(5 6 10 / 0.4) 55%, transparent 100%);
+}
+
 /*
- * Sobre a foto, o texto precisa de mais contraste: tons mais claros e uma sombra escura difusa.
+ * Sobre o disco, o texto precisa de mais contraste: tons mais claros e uma sombra escura difusa.
  * No título é drop-shadow (no h1 inteiro): text-shadow seria cortado pelo overflow das linhas
  * da máscara e viraria um retângulo escuro.
  */
@@ -268,13 +270,6 @@
 
 .about-hero .about-sub {
   color: rgb(230 232 240 / 0.74);
-}
-
-/* Tela em pé: a foto escala pela altura e só um terço da largura aparece; puxa o anel para dentro */
-@media (orientation: portrait) {
-  .about-photo img {
-    object-position: 86% 46%;
-  }
 }
 
 /* ── Seções ───────────────────────────────────────────────── */
@@ -313,11 +308,6 @@
 
 /* ── Movimento ────────────────────────────────────────────── */
 @media (prefers-reduced-motion: no-preference) {
-  /* A foto surge sozinha ao abrir a página, sem esperar a fonte */
-  .about-photo {
-    animation: about-photo-in 2.4s var(--ease-out-expo) 0.1s both;
-  }
-
   /* Quadro de abertura: tudo escondido até a fonte carregar */
   .about-hero[data-intro] :is(.about-pill, .about-sub, .about-btn) {
     opacity: 0;
@@ -394,16 +384,5 @@
   to {
     opacity: 1;
     transform: none;
-  }
-}
-
-@keyframes about-photo-in {
-  from {
-    opacity: 0;
-    scale: 1.06;
-  }
-  to {
-    opacity: 1;
-    scale: 1;
   }
 }

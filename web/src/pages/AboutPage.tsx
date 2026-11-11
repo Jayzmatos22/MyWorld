@@ -1,8 +1,4 @@
-import blackHole768 from '@/assets/about/black-hole-768.webp'
-import blackHole1280 from '@/assets/about/black-hole-1280.webp'
-import blackHole1920 from '@/assets/about/black-hole-1920.webp'
-import blackHole2560 from '@/assets/about/black-hole-2560.webp'
-import { AboutHero, type HeroImage } from '@/components/about/AboutHero'
+import { AboutHero } from '@/components/about/AboutHero'
 import { ExternalAction } from '@/components/ui/ActionLink'
 import { Reveal } from '@/components/ui/Reveal'
 import { SplitTitle } from '@/components/ui/SplitTitle'
@@ -11,24 +7,6 @@ const AUTHOR = 'Jailton Santos'
 const GITHUB_USER = 'Jayzmatos22'
 const GITHUB_PROFILE = `https://github.com/${GITHUB_USER}`
 const REPO_URL = `${GITHUB_PROFILE}/MyWorld`
-
-/**
- * Fundo do hero. A geometria foi medida na foto: círculo ajustado à borda da sombra
- * (erro mediano de 1,3 px) e eixo do disco ajustado ao brilho ao longo da faixa.
- */
-const BLACK_HOLE: HeroImage = {
-  src: blackHole1920,
-  srcSet: `${blackHole768} 768w, ${blackHole1280} 1280w, ${blackHole1920} 1920w, ${blackHole2560} 2560w`,
-  width: 1920,
-  height: 1097,
-  flow: {
-    center: [1.0346, 0.4598],
-    shadowRadius: 0.4338,
-    diskPoint: [0.5, 0.6835],
-    diskDirection: [0.978, -0.2088],
-    diskHalfWidth: 0.07,
-  },
-}
 
 const STATS = [
   { value: '1995', label: 'Primeira placa, em 16 de junho' },
@@ -186,7 +164,7 @@ export function AboutPage() {
   return (
     <>
       <title>Sobre — MyWorld</title>
-      <AboutHero repoUrl={REPO_URL} image={BLACK_HOLE} />
+      <AboutHero repoUrl={REPO_URL} />
       <ProjectSection />
       <MethodSection />
       <SourceSection />

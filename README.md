@@ -65,7 +65,7 @@ Tudo roda na AWS, sem servidor fixo e dentro do nível gratuito: Lambda para a A
 
 **Página Sobre**
 - Abertura no estilo landing page: selo, título em duas linhas revelado por máscara e animação de entrada de cerca de 1,7 s, que espera a fonte carregar
-- Buraco negro em WebGL: os anéis giram e o disco corre, enquanto o centro fica parado; as estrelas animadas do site aparecem nas partes escuras da foto
+- Buraco negro renderizado em tempo real (WebGL 2): lente gravitacional, disco com rotação kepleriana, Doppler e bloom em HDR; reage ao mouse e ao scroll
 - Seções de projeto, metodologia (da coleta à infraestrutura), fonte e autoria
 
 **Arquivo APOD**
@@ -128,9 +128,9 @@ O back-end segue camadas com responsabilidades separadas:
 | Área | Tecnologias |
 |---|---|
 | **Back-end** | Python 3.13, FastAPI 0.162, Pydantic v2, pydantic-settings, Requests, cachetools, BeautifulSoup, SDK `openai`, boto3 |
-| **Front-end** | React 19, TypeScript 5.9 (strict), React Router 7, Tailwind CSS 4, Vite 7, Lucide, WebGL (shader próprio), Canvas 2D |
+| **Front-end** | React 19, TypeScript 5.9 (strict), React Router 7, Tailwind CSS 4, Vite 7, Lucide, WebGL 2 (ray-marching próprio em GLSL), Canvas 2D |
 | **Infraestrutura** | AWS SAM, AWS Lambda (Python 3.13) com Function URL e Mangum, Amazon DynamoDB, Amazon S3, Amazon CloudFront, CloudWatch (logs e alarmes), SNS, AWS Budgets |
-| **Desenvolvimento** | DynamoDB Local (Docker) |
+| **Desenvolvimento** | DynamoDB Local (Docker), lil-gui (painel de ajuste do buraco negro, só em dev) |
 
 ## Estrutura do repositório
 
@@ -177,10 +177,10 @@ MyWorld/
 └── web/                        # Front-end (detalhes em web/README.md)
     └── src/
         ├── pages/              # Sobre, Hoje, Detalhes, Galeria, Acaso, Favoritos
-        ├── components/about/   # Abertura do Sobre: foto + movimento
-        ├── lib/blackHoleFlow.ts # Animação WebGL do buraco negro
+        ├── components/about/   # Abertura do Sobre e canvas do buraco negro
+        ├── lib/blackhole/      # Motor WebGL 2, config tipada e shaders GLSL em chunks
         ├── lib/starfield.ts    # Campo de estrelas (Canvas 2D)
-        └── assets/about/       # Foto do Sobre em 4 larguras (19 a 165 KB)
+        └── assets/about/       # Pôster de fallback do buraco negro (23 KB)
 ```
 
 ## Como rodar localmente
@@ -256,7 +256,7 @@ O front sobe em `http://localhost:5173` e abre no Sobre; a placa do dia fica em 
 | Mudei o `.env` e nada mudou | O `--reload` só observa o código. Pare o uvicorn (Ctrl+C) e suba de novo |
 | A API parece ignorar o código novo | Pode haver outro uvicorn antigo na porta 8000. No Windows: `netstat -ano \| findstr :8000` e `taskkill /PID <pid> /T /F` |
 | `python-dotenv could not parse statement` | Comentários no `.env` usam `#`, não `'''` |
-| O buraco negro do Sobre não se mexe | Sem WebGL ou com "reduzir movimento" ligado no sistema, a página mostra a foto estática de propósito |
+| O buraco negro do Sobre não se mexe | Com "reduzir movimento" ligado no sistema, a página mostra um quadro estático de propósito. Sem WebGL 2, mostra um pôster |
 
 ## Variáveis de ambiente
 
@@ -385,14 +385,15 @@ Os erros do domínio seguem um envelope único, que o front trata de forma tipad
 - **DynamoDB provisionado dentro do free tier.** 10 RCU/10 WCU na tabela e 5/5 no índice (15 de 25 grátis). Se passar disso, a tabela recusa a requisição (503) em vez de cobrar.
 - **Provedores de IA como dados.** Os três provedores usam o mesmo SDK `openai`, mudando só `base_url` e chave. Adicionar um provedor é uma entrada nova em `config/llm.py`.
 - **Entrada pelo Sobre.** A raiz `/` redireciona para `/sobre` com `replace`, para o "voltar" do navegador não cair de novo no redirecionamento. A placa do dia fica em `/hoje`.
-- **Buraco negro animado com "flow map" em WebGL.** A foto é estática; um shader a relê a cada quadro com um pequeno deslocamento:
-  - **Anéis:** giram por ângulo em volta do centro. A geometria foi medida na própria foto: um círculo ajustado à borda da sombra, com erro mediano de 1,3 px.
-  - **Disco:** corre ao longo da faixa.
-  - **Só o gás claro se move:** o shader lê o brilho de cada ponto, então a sombra e o fundo ficam parados.
-  - **Loop sem emenda:** duas leituras defasadas se alternam num ciclo de 11 s.
-  - **Leveza:** 30 quadros por segundo, resolução de até 1,5× e pausa fora da tela. Sem WebGL ou com "reduzir movimento", fica a foto estática.
-- **Foto otimizada.** O original (7000×4000, 7,5 MB) vira quatro larguras em WebP, de 19 a 165 KB, servidas com `srcset`. No celular, a página baixa 45 KB.
-- **Foto misturada ao céu do site.** Com `mix-blend-mode: lighten`, as estrelas animadas aparecem nas partes escuras da foto. Duas máscaras fazem a foto nascer do escuro e apagam o anel atrás do texto.
+- **Buraco negro por ray-marching, não por imagem.** Um shader traça um raio de luz por pixel em volta de um buraco negro de Schwarzschild:
+  - **Lente gravitacional exata:** cada raio segue `d²x/dλ² = −(3/2)·h²·x/r⁵`, a equação da luz nessa métrica. A sombra sai no raio certo, e a parte de trás do disco aparece dobrada por cima e por baixo dela.
+  - **Disco vivo:** rotação kepleriana (ω ∝ r⁻¹·⁵), turbulência FBM com domain warping amostrada num cilindro (sem emenda na volta) e duas camadas que renascem alternadas, para o cisalhamento não crescer sem limite.
+  - **Doppler relativístico:** o lado que vem em direção à câmera fica mais brilhante (g³) e mais branco; o outro, mais escuro e vermelho.
+  - **Pós em HDR:** bloom em cadeia de mips, tone mapping ACES, grão e aberração cromática, tudo em luz linear, com sRGB só no fim.
+- **60 fps com qualidade adaptativa.** O ray-march roda em resolução reduzida (40% a 75%) e o motor mede o tempo de quadro para trocar de nível sozinho. O antisserrilhado é aplicado só no anel fino da borda da sombra (cerca de 1% dos pixels). O loop pausa fora da tela e com a aba oculta, e nada é alocado por quadro.
+- **Alfa em vez de blend-mode.** O shader entrega alfa pré-multiplicado: esconde o céu do site só onde precisa (sombra e disco) e soma luz no resto, sem `mix-blend-mode` nem máscaras CSS.
+- **Fallbacks.** Com "reduzir movimento", um único quadro estático. Sem WebGL 2, ou se o contexto cair, um pôster de 23 KB capturado do próprio render; se o contexto voltar, a animação retoma.
+- **Motor fora do pacote inicial.** O motor e os shaders ficam num arquivo de 12 KB (gzip) carregado à parte; o painel de ajuste (`?bh-debug`, lil-gui) só existe em desenvolvimento.
 - **Abertura que espera a fonte.** A animação de entrada do Sobre só começa quando a fonte carrega, para a revelação por máscara nunca mostrar a fonte de reserva. Depois que termina, nenhuma animação nem `will-change` continua ativo.
 
 ## Deploy
@@ -478,6 +479,5 @@ aws lambda delete-function-concurrency --function-name <output FunctionName do s
 ## Créditos
 
 - Imagens, vídeos e textos das placas: **[Astronomy Picture of the Day](https://apod.nasa.gov/)**, da NASA. Os direitos de cada imagem pertencem aos autores indicados no campo `copyright`.
-- Imagem de fundo da página Sobre: renderização de buraco negro. Autor e licença: _a preencher_.
 - Ícones dos badges da AWS: símbolos simples desenhados para este README (as marcas da AWS não estão disponíveis no shields.io).
 - Projeto de Jailton Santos ([@Jayzmatos22](https://github.com/Jayzmatos22)), independente, sem afiliação ou endosso da NASA.
