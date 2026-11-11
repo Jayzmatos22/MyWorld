@@ -1,60 +1,21 @@
-import { useRef } from 'react'
 import { Link } from 'react-router'
-import { useBlackHoleFlow } from '@/hooks/useBlackHoleFlow'
+import posterUrl from '@/assets/about/black-hole-poster.webp'
 import { useEntrance } from '@/hooks/useEntrance'
-import { useReducedMotion } from '@/hooks/useReducedMotion'
-import type { FlowGeometry } from '@/lib/blackHoleFlow'
-
-/** Imagem de fundo do hero, em várias larguras (o navegador escolhe pelo tamanho da tela) */
-export interface HeroImage {
-  src: string
-  srcSet: string
-  width: number
-  height: number
-  /** Onde estão o centro, o anel e o disco na foto: guia o movimento */
-  flow: FlowGeometry
-}
-
-/**
- * Foto do buraco negro. Em "lighten", as partes escuras deixam passar as estrelas
- * animadas do site. Por cima, um canvas WebGL faz o anel girar e o disco correr; a
- * <img> fica por baixo como base estática (sem WebGL ou com "reduzir movimento").
- */
-function AboutPhoto({ image }: { image: HeroImage }) {
-  const imageRef = useRef<HTMLImageElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const reducedMotion = useReducedMotion()
-  useBlackHoleFlow(canvasRef, imageRef, image.flow, !reducedMotion)
-
-  return (
-    <div className="about-photo" aria-hidden="true">
-      <img
-        ref={imageRef}
-        src={image.src}
-        srcSet={image.srcSet}
-        sizes="100vw"
-        width={image.width}
-        height={image.height}
-        alt=""
-        fetchPriority="high"
-        decoding="async"
-      />
-      {reducedMotion ? null : <canvas ref={canvasRef} className="about-photo__flow" />}
-    </div>
-  )
-}
+import { BlackHoleCanvas } from './BlackHoleCanvas'
 
 /**
  * Abertura da página Sobre, na estrutura do prompt "Orbit" (selo, título de duas
  * linhas com máscara, subtítulo e dois botões, escalando juntos por --u) com a
  * identidade do MyWorld. A coreografia espera a fonte carregar e roda uma vez.
  */
-export function AboutHero({ repoUrl, image }: { repoUrl: string; image: HeroImage }) {
+export function AboutHero({ repoUrl }: { repoUrl: string }) {
   const { phase, onLastAnimationEnd } = useEntrance()
 
   return (
     <section className="about-hero" data-intro={phase === 'done' ? undefined : phase} aria-labelledby="sobre-titulo">
-      <AboutPhoto image={image} />
+      <BlackHoleCanvas poster={posterUrl} />
+      {/* Escurece atrás do texto para a leitura não brigar com o disco */}
+      <div className="about-hero__scrim" aria-hidden="true" />
 
       <div className="about-hero__copy">
         <Link to="/hoje" viewTransition className="about-pill">
